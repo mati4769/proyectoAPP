@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Guia233Theme {
                 Scaffold { innerPadding ->
-                    // Aquí insertamos el flujo de navegación en lugar de Greeting()
+                    // Carga la navegación de la app: parte en el Login y sigue al Menú, la lista de solicitudes y el formulario
                     Box(modifier = Modifier.padding(paddingValues = innerPadding)) {
                         AppNavigation()
                     }

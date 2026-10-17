@@ -5,26 +5,35 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.guia233.ui.screen.RegistroScreen
-import com.example.guia233.ui.screen.ResumenScreen
-import com.example.guia233.viewmodel.UsuarioViewModel
+import com.example.guia233.ui.screen.LoginScreen
+import com.example.guia233.ui.screen.MenuScreen
+import com.example.guia233.ui.solicitud.ListaSolicitudesScreen
+import com.example.guia233.ui.solicitud.SolicitudFormScreen
+import com.example.guia233.ui.solicitud.SolicitudViewModel
+import com.example.guia233.viewmodel.LoginViewModel
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    // Aquí creamos el ViewModel una sola vez
-    val usuarioViewModel: UsuarioViewModel = viewModel()
+    val loginViewModel: LoginViewModel = viewModel()
+    val solicitudViewModel: SolicitudViewModel = viewModel()
 
     NavHost(
         navController = navController,
-        startDestination = "registro"
+        startDestination = "login"
     ) {
-        composable(route = "registro") {
-            RegistroScreen(navController, usuarioViewModel)
+        composable(route = "login") {
+            LoginScreen(navController, loginViewModel)
         }
-        composable(route = "resumen") {
-            ResumenScreen(usuarioViewModel)
+        composable(route = "menu") {
+            MenuScreen(navController, onCerrarSesion = loginViewModel::cerrarSesion)
+        }
+        composable(route = "lista") {
+            ListaSolicitudesScreen(navController, solicitudViewModel)
+        }
+        composable(route = "formulario") {
+            SolicitudFormScreen(navController, solicitudViewModel)
         }
     }
 }
