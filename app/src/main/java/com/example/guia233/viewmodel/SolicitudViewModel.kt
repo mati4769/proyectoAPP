@@ -1,11 +1,11 @@
-package com.example.guia233.ui.solicitud
+package com.example.guia233.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.guia233.data.local.AppDatabase
-import com.example.guia233.data.local.SolicitudEntity
-import com.example.guia233.data.repository.SolicitudRepository
+import com.example.guia233.model.data.local.AppDatabase
+import com.example.guia233.model.data.local.SolicitudEntity
+import com.example.guia233.model.data.repository.SolicitudRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

@@ -1,7 +1,7 @@
-package com.example.guia233.data.repository
+package com.example.guia233.model.data.repository
 
-import com.example.guia233.data.local.SolicitudDao
-import com.example.guia233.data.local.SolicitudEntity
+import com.example.guia233.model.data.local.SolicitudDao
+import com.example.guia233.model.data.local.SolicitudEntity
 
 class SolicitudRepository(private val dao: SolicitudDao) {
 

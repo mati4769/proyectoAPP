@@ -1,4 +1,4 @@
-package com.example.guia233.ui.solicitud
+package com.example.guia233.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.guia233.viewmodel.SolicitudViewModel
 
 @Composable
 fun ListaSolicitudesScreen(

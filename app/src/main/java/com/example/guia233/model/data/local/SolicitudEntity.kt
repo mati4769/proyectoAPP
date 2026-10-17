@@ -1,5 +1,4 @@
-package com.example.guia233.data.local
-
+package com.example.guia233.model.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

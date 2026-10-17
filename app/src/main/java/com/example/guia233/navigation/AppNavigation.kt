@@ -7,9 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.guia233.ui.screen.LoginScreen
 import com.example.guia233.ui.screen.MenuScreen
-import com.example.guia233.ui.solicitud.ListaSolicitudesScreen
-import com.example.guia233.ui.solicitud.SolicitudFormScreen
-import com.example.guia233.ui.solicitud.SolicitudViewModel
+import com.example.guia233.ui.screen.ListaSolicitudesScreen
+import com.example.guia233.ui.screen.SolicitudFormScreen
+import com.example.guia233.viewmodel.SolicitudViewModel
 import com.example.guia233.viewmodel.LoginViewModel
 
 @Composable

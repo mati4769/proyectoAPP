@@ -1,4 +1,4 @@
-package com.example.guia233.data.local
+package com.example.guia233.model.data.local
 
 import android.content.Context
 import androidx.room.Database
