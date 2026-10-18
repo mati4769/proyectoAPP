@@ -13,4 +13,7 @@ interface SolicitudDao {
 
     @Query("SELECT * FROM solicitudes ORDER BY id DESC")
     fun obtenerTodas(): Flow<List<SolicitudEntity>>
+
+    @Query("SELECT * FROM solicitudes WHERE codigo = :codigo")
+    suspend fun buscarPorCodigo(codigo: String): SolicitudEntity?
 }

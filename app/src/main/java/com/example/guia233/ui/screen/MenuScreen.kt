@@ -34,6 +34,13 @@ fun MenuScreen(
         }
 
         Button(
+            onClick = { navController.navigate("qr") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Escanear código QR")
+        }
+
+        Button(
             onClick = {
                 onCerrarSesion()
                 navController.popBackStack()

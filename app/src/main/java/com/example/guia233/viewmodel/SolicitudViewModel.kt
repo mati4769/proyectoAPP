@@ -90,4 +90,22 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             onListo()
         }
     }
+    // Lectura de código QR
+    private val _qrLeido = MutableStateFlow<String?>(null)
+    val qrLeido: StateFlow<String?> = _qrLeido
+
+    private val _solicitudQr = MutableStateFlow<SolicitudEntity?>(null)
+    val solicitudQr: StateFlow<SolicitudEntity?> = _solicitudQr
+
+    fun onQrDetected(codigo: String) {
+        viewModelScope.launch {
+            _solicitudQr.value = repository.buscarPorCodigo(codigo)
+            _qrLeido.value = codigo
+        }
+    }
+
+    fun clearResult() {
+        _qrLeido.value = null
+        _solicitudQr.value = null
+    }
 }
