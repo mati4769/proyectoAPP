@@ -24,7 +24,8 @@ data class SolicitudUiState(
     val categoriaError: String? = null,
     val servicioError: String? = null,
     val guardando: Boolean = false,
-    val guardadoExitosamente: Boolean = false
+    val guardadoExitosamente: Boolean = false,
+    val solicitudEditando: SolicitudEntity? = null
 )
 
 class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
@@ -35,6 +36,22 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _estado = MutableStateFlow(SolicitudUiState())
     val estado: StateFlow<SolicitudUiState> = _estado
+
+    // Limpia el formulario para crear una solicitud nueva
+    fun nuevaSolicitud() {
+        _estado.value = SolicitudUiState()
+    }
+
+    // Carga una solicitud de la lista en el formulario para consultarla o editarla
+    fun cargarSolicitud(solicitud: SolicitudEntity) {
+        _estado.value = SolicitudUiState(
+            titulo = solicitud.titulo,
+            descripcion = solicitud.descripcion,
+            categoria = solicitud.categoria,
+            servicio = solicitud.servicio,
+            solicitudEditando = solicitud
+        )
+    }
 
     fun onTituloChange(valor: String) {
         _estado.update { it.copy(titulo = valor, tituloError = null) }
@@ -75,21 +92,35 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         val s = _estado.value
         _estado.update { it.copy(guardando = true) }
         viewModelScope.launch {
-            repository.insertar(
-                SolicitudEntity(
-                    codigo = "SOL-" + System.currentTimeMillis(),
-                    titulo = s.titulo,
-                    descripcion = s.descripcion,
-                    categoria = s.categoria,
-                    servicio = s.servicio,
-                    estado = "Recibida",
-                    fechaCreacion = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+            val editando = s.solicitudEditando
+            if (editando != null) {
+                // Editar: se mantienen el código, el estado y la fecha de creación
+                repository.actualizar(
+                    editando.copy(
+                        titulo = s.titulo,
+                        descripcion = s.descripcion,
+                        categoria = s.categoria,
+                        servicio = s.servicio
+                    )
                 )
-            )
+            } else {
+                repository.insertar(
+                    SolicitudEntity(
+                        codigo = "SOL-" + System.currentTimeMillis(),
+                        titulo = s.titulo,
+                        descripcion = s.descripcion,
+                        categoria = s.categoria,
+                        servicio = s.servicio,
+                        estado = "Recibida",
+                        fechaCreacion = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+                    )
+                )
+            }
             _estado.value = SolicitudUiState(guardadoExitosamente = true)
             onListo()
         }
     }
+
     // Lectura de código QR
     private val _qrLeido = MutableStateFlow<String?>(null)
     val qrLeido: StateFlow<String?> = _qrLeido

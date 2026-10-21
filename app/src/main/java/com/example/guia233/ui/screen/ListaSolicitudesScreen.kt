@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.guia233.viewmodel.SolicitudViewModel
+import androidx.compose.foundation.clickable
 
 @Composable
 fun ListaSolicitudesScreen(
@@ -35,7 +36,10 @@ fun ListaSolicitudesScreen(
         Text("Mis solicitudes", style = MaterialTheme.typography.headlineMedium)
 
         Button(
-            onClick = { navController.navigate("formulario") },
+            onClick = {
+                viewModel.nuevaSolicitud()
+                navController.navigate("formulario")
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Nueva solicitud")
@@ -47,7 +51,15 @@ fun ListaSolicitudesScreen(
 
         LazyColumn {
             items(solicitudes) { s ->
-                Column(Modifier.padding(vertical = 8.dp)) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            viewModel.cargarSolicitud(s)
+                            navController.navigate("formulario")
+                        }
+                        .padding(vertical = 8.dp)
+                ) {
                     Text(s.codigo, style = MaterialTheme.typography.titleMedium)
                     Text("Título: ${s.titulo}")
                     Text("Categoría: ${s.categoria}")

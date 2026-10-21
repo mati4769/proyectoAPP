@@ -4,12 +4,16 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import androidx.room.Update
 
 @Dao
 interface SolicitudDao {
 
     @Insert
     suspend fun insertar(solicitud: SolicitudEntity)
+
+    @Update
+    suspend fun actualizar(solicitud: SolicitudEntity)
 
     @Query("SELECT * FROM solicitudes ORDER BY id DESC")
     fun obtenerTodas(): Flow<List<SolicitudEntity>>

@@ -10,6 +10,10 @@ class SolicitudRepository(private val dao: SolicitudDao) {
         dao.insertar(solicitud)
     }
 
+    suspend fun actualizar(solicitud: SolicitudEntity) {
+        dao.actualizar(solicitud)
+    }
+
     suspend fun buscarPorCodigo(codigo: String): SolicitudEntity? {
         return dao.buscarPorCodigo(codigo)
     }

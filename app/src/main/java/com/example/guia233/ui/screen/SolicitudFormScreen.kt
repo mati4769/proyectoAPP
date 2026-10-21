@@ -30,7 +30,15 @@ fun SolicitudFormScreen(
             .padding(all = 16.dp),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
-        Text("Nueva solicitud", style = MaterialTheme.typography.headlineMedium)
+        val editando = estado.solicitudEditando
+        if (editando != null) {
+            Text("Editar solicitud", style = MaterialTheme.typography.headlineMedium)
+            Text("Código: ${editando.codigo}")
+            Text("Estado: ${editando.estado}")
+            Text("Creada: ${editando.fechaCreacion}")
+        } else {
+            Text("Nueva solicitud", style = MaterialTheme.typography.headlineMedium)
+        }
 
         OutlinedTextField(
             value = estado.titulo,
@@ -79,7 +87,7 @@ fun SolicitudFormScreen(
             enabled = !estado.guardando,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Guardar solicitud")
+            Text(if (editando != null) "Guardar cambios" else "Guardar solicitud")
         }
     }
 }
