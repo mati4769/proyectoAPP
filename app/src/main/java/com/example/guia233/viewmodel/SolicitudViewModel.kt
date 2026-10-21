@@ -3,11 +3,13 @@ package com.example.guia233.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.guia233.model.Usuario
 import com.example.guia233.model.data.local.AppDatabase
 import com.example.guia233.model.data.local.SolicitudEntity
 import com.example.guia233.model.data.repository.SolicitudRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -33,7 +35,30 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repository = SolicitudRepository(AppDatabase.getDatabase(app).solicitudDao())
 
-    val solicitudes = repository.solicitudes
+    // Usuario que inició sesión
+    private var usuario: Usuario? = null
+
+    fun iniciarSesion(u: Usuario) {
+        usuario = u
+    }
+
+    fun rolActual(): String {
+        return usuario?.rol ?: ""
+    }
+
+    // Cada perfil ve solo las solicitudes que le corresponden
+    val solicitudes = repository.solicitudes.map { lista ->
+        when (usuario?.rol) {
+            "Cliente" -> lista.filter { it.clienteCorreo == usuario?.correo }
+            "Técnico" -> lista.filter { it.responsable == usuario?.correo }
+            else -> lista
+        }
+    }
+
+    // Fecha y hora actual en texto
+    private fun ahora(): String {
+        return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+    }
 
     private val _estado = MutableStateFlow(SolicitudUiState())
     val estado: StateFlow<SolicitudUiState> = _estado
@@ -108,7 +133,8 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                         descripcion = s.descripcion,
                         categoria = s.categoria,
                         servicio = s.servicio,
-                        evidenciaUri = s.evidenciaUri
+                        evidenciaUri = s.evidenciaUri,
+                        ultimaActualizacion = ahora()
                     )
                 )
             } else {
@@ -121,7 +147,9 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                         servicio = s.servicio,
                         estado = "Recibida",
                         evidenciaUri = s.evidenciaUri,
-                        fechaCreacion = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+                        fechaCreacion = ahora(),
+                        clienteCorreo = usuario?.correo ?: "",
+                        ultimaActualizacion = ahora()
                     )
                 )
             }
@@ -139,7 +167,13 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onQrDetected(codigo: String) {
         viewModelScope.launch {
-            _solicitudQr.value = repository.buscarPorCodigo(codigo)
+            val encontrada = repository.buscarPorCodigo(codigo)
+            // El cliente no puede ver solicitudes de otros clientes
+            if (usuario?.rol == "Cliente" && encontrada?.clienteCorreo != usuario?.correo) {
+                _solicitudQr.value = null
+            } else {
+                _solicitudQr.value = encontrada
+            }
             _qrLeido.value = codigo
         }
     }

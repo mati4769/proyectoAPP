@@ -1,6 +1,8 @@
 package com.example.guia233.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.guia233.model.Usuario
+import com.example.guia233.model.usuariosDemo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -9,7 +11,8 @@ data class LoginUiState(
     val correo: String = "",
     val clave: String = "",
     val correoError: String? = null,
-    val claveError: String? = null
+    val claveError: String? = null,
+    val usuario: Usuario? = null
 )
 
 class LoginViewModel : ViewModel() {
@@ -28,11 +31,20 @@ class LoginViewModel : ViewModel() {
     fun validarFormulario(): Boolean {
         val e = _estado.value
         val correoError = if (!e.correo.contains("@")) "Correo inválido" else null
-        val claveError = if (e.clave.length < 6) "Debe tener al menos 6 caracteres" else null
+        var claveError = if (e.clave.length < 6) "Debe tener al menos 6 caracteres" else null
 
-        _estado.update { it.copy(correoError = correoError, claveError = claveError) }
+        // Si el formato está bien, se busca la cuenta ficticia
+        var usuario: Usuario? = null
+        if (correoError == null && claveError == null) {
+            usuario = usuariosDemo.find { it.correo == e.correo && it.clave == e.clave }
+            if (usuario == null) {
+                claveError = "Correo o contraseña incorrectos"
+            }
+        }
 
-        return correoError == null && claveError == null
+        _estado.update { it.copy(correoError = correoError, claveError = claveError, usuario = usuario) }
+
+        return usuario != null
     }
 
     fun cerrarSesion() {

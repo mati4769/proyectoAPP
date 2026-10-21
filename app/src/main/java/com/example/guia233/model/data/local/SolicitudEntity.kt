@@ -13,5 +13,11 @@ data class SolicitudEntity(
     val servicio: String,
     val estado: String,
     val fechaCreacion: String,
-    val evidenciaUri: String? = null
+    val evidenciaUri: String? = null,
+    val clienteCorreo: String,
+    val prioridad: String = "Sin definir",
+    val responsable: String? = null,
+    val ultimaActualizacion: String,
+    val creadaEnMillis: Long = System.currentTimeMillis(),
+    val resolucion: String? = null
 )

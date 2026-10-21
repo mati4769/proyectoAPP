@@ -12,10 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.guia233.model.Usuario
 
 @Composable
 fun MenuScreen(
     navController: NavController,
+    usuario: Usuario?,
     onCerrarSesion: () -> Unit
 ) {
     Column(
@@ -25,19 +27,30 @@ fun MenuScreen(
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
         Text("Menú", style = MaterialTheme.typography.headlineMedium)
+        Text("Hola, ${usuario?.nombre ?: ""} (${usuario?.rol ?: ""})")
+
+        // El texto del botón cambia según el perfil
+        val textoLista = when (usuario?.rol) {
+            "Administrador" -> "Todas las solicitudes"
+            "Técnico" -> "Solicitudes asignadas"
+            else -> "Mis solicitudes"
+        }
 
         Button(
             onClick = { navController.navigate("lista") },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Solicitudes")
+            Text(textoLista)
         }
 
-        Button(
-            onClick = { navController.navigate("qr") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Escanear código QR")
+        // El técnico solo trabaja con sus solicitudes asignadas
+        if (usuario?.rol != "Técnico") {
+            Button(
+                onClick = { navController.navigate("qr") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Escanear código QR")
+            }
         }
 
         Button(

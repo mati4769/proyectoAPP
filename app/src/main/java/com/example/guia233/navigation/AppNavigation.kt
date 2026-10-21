@@ -1,6 +1,8 @@
 package com.example.guia233.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -23,15 +25,18 @@ fun AppNavigation(
     val loginViewModel: LoginViewModel = viewModel()
     val solicitudViewModel: SolicitudViewModel = viewModel()
 
+    // Usuario que inició sesión
+    val loginEstado by loginViewModel.estado.collectAsState()
+
     NavHost(
         navController = navController,
         startDestination = "login"
     ) {
         composable(route = "login") {
-            LoginScreen(navController, loginViewModel)
+            LoginScreen(navController, loginViewModel, onIngresar = solicitudViewModel::iniciarSesion)
         }
         composable(route = "menu") {
-            MenuScreen(navController, onCerrarSesion = loginViewModel::cerrarSesion)
+            MenuScreen(navController, loginEstado.usuario, onCerrarSesion = loginViewModel::cerrarSesion)
         }
         composable(route = "lista") {
             ListaSolicitudesScreen(navController, solicitudViewModel)

@@ -17,11 +17,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.guia233.viewmodel.LoginViewModel
+import com.example.guia233.model.Usuario
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    onIngresar: (Usuario) -> Unit
 ) {
     val estado by viewModel.estado.collectAsState()
 
@@ -55,6 +57,7 @@ fun LoginScreen(
         Button(
             onClick = {
                 if (viewModel.validarFormulario()) {
+                    onIngresar(viewModel.estado.value.usuario!!)
                     navController.navigate("menu")
                 }
             },
