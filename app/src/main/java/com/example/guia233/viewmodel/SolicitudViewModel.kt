@@ -32,6 +32,13 @@ data class SolicitudUiState(
     val solicitudEditando: SolicitudEntity? = null
 )
 
+// Estado de los campos de la pantalla de detalle
+data class DetalleUiState(
+    val comentario: String = "",
+    val comentarioError: String? = null,
+    val categoria: String = ""
+)
+
 class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repository = SolicitudRepository(AppDatabase.getDatabase(app).solicitudDao())
@@ -66,6 +73,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     fun verDetalle(id: Long) {
         seleccionadaId = id
+        _detalle.value = DetalleUiState()
     }
 
     // Historial de una solicitud, del más antiguo al más nuevo
@@ -92,6 +100,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             )
         )
     }
+
     private val _estado = MutableStateFlow(SolicitudUiState())
     val estado: StateFlow<SolicitudUiState> = _estado
 
@@ -189,6 +198,82 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             }
             _estado.value = SolicitudUiState(guardadoExitosamente = true)
             onListo()
+        }
+    }
+
+    // ---------- Acciones del detalle (administrador, técnico y cliente) ----------
+
+    private val _detalle = MutableStateFlow(DetalleUiState())
+    val detalle: StateFlow<DetalleUiState> = _detalle
+
+    fun onComentarioChange(valor: String) {
+        _detalle.update { it.copy(comentario = valor, comentarioError = null) }
+    }
+
+    fun onCategoriaDetalleChange(valor: String) {
+        _detalle.update { it.copy(categoria = valor) }
+    }
+
+    // Revisa que se haya escrito un comentario cuando la acción lo necesita
+    private fun comentarioValido(): Boolean {
+        if (_detalle.value.comentario.isBlank()) {
+            _detalle.update { it.copy(comentarioError = "Escribe un comentario") }
+            return false
+        }
+        return true
+    }
+
+    // Cambia el estado y lo deja registrado en el historial
+    fun cambiarEstado(s: SolicitudEntity, nuevoEstado: String, accion: String, pideComentario: Boolean = false) {
+        if (pideComentario && !comentarioValido()) return
+        val comentario = _detalle.value.comentario
+        viewModelScope.launch {
+            repository.actualizar(
+                s.copy(
+                    estado = nuevoEstado,
+                    ultimaActualizacion = ahora(),
+                    resolucion = if (nuevoEstado == "Resuelta") comentario else s.resolucion
+                )
+            )
+            registrarHistorial(s.id, s.estado, nuevoEstado, accion, comentario)
+            _detalle.update { it.copy(comentario = "") }
+        }
+    }
+
+    fun cambiarPrioridad(s: SolicitudEntity, prioridad: String) {
+        viewModelScope.launch {
+            repository.actualizar(s.copy(prioridad = prioridad, ultimaActualizacion = ahora()))
+            registrarHistorial(s.id, s.estado, s.estado, "Prioridad cambiada a $prioridad")
+        }
+    }
+
+    fun cambiarCategoria(s: SolicitudEntity) {
+        val categoria = _detalle.value.categoria
+        if (categoria.isBlank()) return
+        viewModelScope.launch {
+            repository.actualizar(s.copy(categoria = categoria, ultimaActualizacion = ahora()))
+            registrarHistorial(s.id, s.estado, s.estado, "Clasificada como $categoria")
+            _detalle.update { it.copy(categoria = "") }
+        }
+    }
+
+    fun asignar(s: SolicitudEntity, tecnico: Usuario) {
+        viewModelScope.launch {
+            repository.actualizar(
+                s.copy(responsable = tecnico.correo, estado = "Asignada", ultimaActualizacion = ahora())
+            )
+            registrarHistorial(s.id, s.estado, "Asignada", "Asignada a ${tecnico.nombre}")
+        }
+    }
+
+    // Agrega un comentario o avance sin cambiar el estado
+    fun comentar(s: SolicitudEntity, accion: String) {
+        if (!comentarioValido()) return
+        val comentario = _detalle.value.comentario
+        viewModelScope.launch {
+            repository.actualizar(s.copy(ultimaActualizacion = ahora()))
+            registrarHistorial(s.id, s.estado, s.estado, accion, comentario)
+            _detalle.update { it.copy(comentario = "") }
         }
     }
 
