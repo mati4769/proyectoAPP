@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.guia233.model.Usuario
+import com.example.guia233.model.usuariosDemo
 import com.example.guia233.model.data.local.AppDatabase
 import com.example.guia233.model.data.local.HistorialEntity
 import com.example.guia233.model.data.local.SolicitudEntity
@@ -39,6 +40,16 @@ data class DetalleUiState(
     val categoria: String = ""
 )
 
+// Filtros y búsqueda de la lista
+data class FiltroUiState(
+    val busqueda: String = "",
+    val estado: String = "Todos",
+    val prioridad: String = "Todas",
+    val cliente: String = "Todos",
+    val responsable: String = "Todos",
+    val soloAtrasadas: Boolean = false
+)
+
 class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repository = SolicitudRepository(AppDatabase.getDatabase(app).solicitudDao())
@@ -48,6 +59,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     fun iniciarSesion(u: Usuario) {
         usuario = u
+        _filtro.value = FiltroUiState()
     }
 
     fun rolActual(): String {
@@ -274,6 +286,81 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             repository.actualizar(s.copy(ultimaActualizacion = ahora()))
             registrarHistorial(s.id, s.estado, s.estado, accion, comentario)
             _detalle.update { it.copy(comentario = "") }
+        }
+    }
+
+    // ---------- Filtros, búsqueda y atrasadas ----------
+
+    // Opciones de cada filtro (la primera significa "sin filtrar")
+    val estados = listOf(
+        "Todos", "Recibida", "En revisión", "Pendiente de información",
+        "Asignada", "En proceso", "Resuelta", "Cerrada", "Cancelada"
+    )
+    val prioridades = listOf("Todas", "Sin definir", "Baja", "Media", "Alta", "Urgente")
+    val clientes = listOf("Todos") + usuariosDemo.filter { it.rol == "Cliente" }.map { it.correo }
+    val responsables = listOf("Todos") + usuariosDemo.filter { it.rol == "Técnico" }.map { it.correo }
+
+    private val _filtro = MutableStateFlow(FiltroUiState())
+    val filtro: StateFlow<FiltroUiState> = _filtro
+
+    fun onBusquedaChange(valor: String) {
+        _filtro.update { it.copy(busqueda = valor) }
+    }
+
+    // Devuelve la opción que sigue en la lista (al llegar al final vuelve al inicio)
+    private fun siguiente(opciones: List<String>, actual: String): String {
+        val i = opciones.indexOf(actual)
+        return opciones[(i + 1) % opciones.size]
+    }
+
+    fun cambiarFiltroEstado() {
+        _filtro.update { it.copy(estado = siguiente(estados, it.estado)) }
+    }
+
+    fun cambiarFiltroPrioridad() {
+        _filtro.update { it.copy(prioridad = siguiente(prioridades, it.prioridad)) }
+    }
+
+    fun cambiarFiltroCliente() {
+        _filtro.update { it.copy(cliente = siguiente(clientes, it.cliente)) }
+    }
+
+    fun cambiarFiltroResponsable() {
+        _filtro.update { it.copy(responsable = siguiente(responsables, it.responsable)) }
+    }
+
+    fun cambiarSoloAtrasadas() {
+        _filtro.update { it.copy(soloAtrasadas = !it.soloAtrasadas) }
+    }
+
+    fun limpiarFiltros() {
+        _filtro.value = FiltroUiState()
+    }
+
+    // Tiempo máximo sin resolver: 3 días.
+    // Para probarlo en la demo se puede cambiar a 2 * 60 * 1000L (2 minutos).
+    private val limiteAtraso = 3 * 24 * 60 * 60 * 1000L
+
+    // Una solicitud está atrasada si sigue abierta y pasó el tiempo límite
+    fun esAtrasada(s: SolicitudEntity): Boolean {
+        val terminada = s.estado == "Resuelta" || s.estado == "Cerrada" || s.estado == "Cancelada"
+        return !terminada && System.currentTimeMillis() - s.creadaEnMillis > limiteAtraso
+    }
+
+    // Aplica la búsqueda y todos los filtros a la lista
+    fun aplicarFiltros(lista: List<SolicitudEntity>, f: FiltroUiState): List<SolicitudEntity> {
+        return lista.filter { s ->
+            val coincideBusqueda = f.busqueda.isBlank() ||
+                    s.codigo.contains(f.busqueda, ignoreCase = true) ||
+                    s.titulo.contains(f.busqueda, ignoreCase = true)
+            val coincideEstado = f.estado == "Todos" || s.estado == f.estado
+            val coincidePrioridad = f.prioridad == "Todas" || s.prioridad == f.prioridad
+            val coincideCliente = f.cliente == "Todos" || s.clienteCorreo == f.cliente
+            val coincideResponsable = f.responsable == "Todos" || s.responsable == f.responsable
+            val coincideAtraso = !f.soloAtrasadas || esAtrasada(s)
+
+            coincideBusqueda && coincideEstado && coincidePrioridad &&
+                    coincideCliente && coincideResponsable && coincideAtraso
         }
     }
 

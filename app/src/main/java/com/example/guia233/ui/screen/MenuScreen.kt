@@ -43,6 +43,16 @@ fun MenuScreen(
             Text(textoLista)
         }
 
+        // Solo el administrador ve el resumen general
+        if (usuario?.rol == "Administrador") {
+            Button(
+                onClick = { navController.navigate("resumen") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Resumen general")
+            }
+        }
+
         // El técnico solo trabaja con sus solicitudes asignadas
         if (usuario?.rol != "Técnico") {
             Button(
