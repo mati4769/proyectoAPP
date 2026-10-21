@@ -64,6 +64,7 @@ fun ListaSolicitudesScreen(
                     Text("Título: ${s.titulo}")
                     Text("Categoría: ${s.categoria}")
                     Text("Estado: ${s.estado}")
+                    Text("Evidencia: ${if (s.evidenciaUri != null) "Sí" else "No"}")
                     Text("Creada: ${s.fechaCreacion}")
                 }
                 HorizontalDivider()

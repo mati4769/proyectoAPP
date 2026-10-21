@@ -19,6 +19,7 @@ data class SolicitudUiState(
     val descripcion: String = "",
     val categoria: String = "",
     val servicio: String = "",
+    val evidenciaUri: String? = null,
     val tituloError: String? = null,
     val descripcionError: String? = null,
     val categoriaError: String? = null,
@@ -49,6 +50,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             descripcion = solicitud.descripcion,
             categoria = solicitud.categoria,
             servicio = solicitud.servicio,
+            evidenciaUri = solicitud.evidenciaUri,
             solicitudEditando = solicitud
         )
     }
@@ -67,6 +69,11 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onServicioChange(valor: String) {
         _estado.update { it.copy(servicio = valor, servicioError = null) }
+    }
+
+    // Guarda la imagen elegida desde el dispositivo
+    fun onEvidenciaChange(uri: String?) {
+        _estado.update { it.copy(evidenciaUri = uri) }
     }
 
     fun validarFormulario(): Boolean {
@@ -100,7 +107,8 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                         titulo = s.titulo,
                         descripcion = s.descripcion,
                         categoria = s.categoria,
-                        servicio = s.servicio
+                        servicio = s.servicio,
+                        evidenciaUri = s.evidenciaUri
                     )
                 )
             } else {
@@ -112,6 +120,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                         categoria = s.categoria,
                         servicio = s.servicio,
                         estado = "Recibida",
+                        evidenciaUri = s.evidenciaUri,
                         fechaCreacion = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
                     )
                 )

@@ -1,5 +1,7 @@
 package com.example.guia233.ui.screen
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +25,15 @@ fun SolicitudFormScreen(
     viewModel: SolicitudViewModel
 ) {
     val estado by viewModel.estado.collectAsState()
+
+    // Abre la galería del dispositivo para elegir una imagen
+    val elegirImagen = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            viewModel.onEvidenciaChange(uri.toString())
+        }
+    }
 
     Column(
         Modifier
@@ -75,6 +86,15 @@ fun SolicitudFormScreen(
             supportingText = { Text(estado.servicioError ?: "") },
             modifier = Modifier.fillMaxWidth()
         )
+
+        Button(
+            onClick = { elegirImagen.launch("image/*") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (estado.evidenciaUri != null) "Cambiar evidencia" else "Adjuntar evidencia (imagen)")
+        }
+
+        Text(if (estado.evidenciaUri != null) "Evidencia: imagen adjunta" else "Evidencia: sin adjuntar")
 
         Button(
             onClick = {
