@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.guia233.model.Usuario
 import com.example.guia233.model.data.local.AppDatabase
+import com.example.guia233.model.data.local.HistorialEntity
 import com.example.guia233.model.data.local.SolicitudEntity
 import com.example.guia233.model.data.repository.SolicitudRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +61,37 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
     }
 
+    // Solicitud elegida en la lista para ver su detalle
+    var seleccionadaId: Long = 0
+
+    fun verDetalle(id: Long) {
+        seleccionadaId = id
+    }
+
+    // Historial de una solicitud, del más antiguo al más nuevo
+    fun historial(solicitudId: Long) = repository.historial(solicitudId)
+
+    // Guarda un cambio en el historial con la fecha y el usuario actual
+    private suspend fun registrarHistorial(
+        solicitudId: Long,
+        estadoAnterior: String,
+        estadoNuevo: String,
+        accion: String,
+        comentario: String = ""
+    ) {
+        repository.insertarHistorial(
+            HistorialEntity(
+                solicitudId = solicitudId,
+                estadoAnterior = estadoAnterior,
+                estadoNuevo = estadoNuevo,
+                accion = accion,
+                comentario = comentario,
+                usuario = usuario?.correo ?: "",
+                perfil = usuario?.rol ?: "",
+                fecha = ahora()
+            )
+        )
+    }
     private val _estado = MutableStateFlow(SolicitudUiState())
     val estado: StateFlow<SolicitudUiState> = _estado
 
@@ -137,8 +169,9 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                         ultimaActualizacion = ahora()
                     )
                 )
+                registrarHistorial(editando.id, editando.estado, editando.estado, "Solicitud editada por el cliente")
             } else {
-                repository.insertar(
+                val nuevoId = repository.insertar(
                     SolicitudEntity(
                         codigo = "SOL-" + System.currentTimeMillis(),
                         titulo = s.titulo,
@@ -152,6 +185,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                         ultimaActualizacion = ahora()
                     )
                 )
+                registrarHistorial(nuevoId, "-", "Recibida", "Solicitud creada")
             }
             _estado.value = SolicitudUiState(guardadoExitosamente = true)
             onListo()

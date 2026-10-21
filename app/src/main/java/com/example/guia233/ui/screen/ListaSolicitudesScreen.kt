@@ -64,11 +64,9 @@ fun ListaSolicitudesScreen(
                     Modifier
                         .fillMaxWidth()
                         .clickable {
-                            // El cliente puede editar mientras la solicitud no esté cerrada o cancelada
-                            if (rol == "Cliente" && s.estado != "Cerrada" && s.estado != "Cancelada") {
-                                viewModel.cargarSolicitud(s)
-                                navController.navigate("formulario")
-                            }
+                            // Todos los perfiles pueden ver el detalle
+                            viewModel.verDetalle(s.id)
+                            navController.navigate("detalle")
                         }
                         .padding(vertical = 8.dp)
                 ) {

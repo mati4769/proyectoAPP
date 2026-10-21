@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.guia233.ui.screen.DetalleSolicitudScreen
 import com.example.guia233.ui.screen.LoginScreen
 import com.example.guia233.ui.screen.MenuScreen
 import com.example.guia233.ui.screen.ListaSolicitudesScreen
@@ -43,6 +44,9 @@ fun AppNavigation(
         }
         composable(route = "formulario") {
             SolicitudFormScreen(navController, solicitudViewModel)
+        }
+        composable(route = "detalle") {
+            DetalleSolicitudScreen(navController, solicitudViewModel)
         }
         composable(route = "qr") {
             QrScannerScreen(navController, solicitudViewModel, hasCameraPermission, onRequestPermission)
