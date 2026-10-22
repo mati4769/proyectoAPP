@@ -1,5 +1,6 @@
 package com.example.guia233.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,34 +70,43 @@ fun ListaSolicitudesScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // ---------- Filtros (cada toque pasa a la siguiente opción) ----------
-                Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-                    Button(onClick = { viewModel.cambiarFiltroEstado() }, modifier = Modifier.weight(1f)) {
-                        Text("Estado: ${filtro.estado}")
-                    }
-                    Button(onClick = { viewModel.cambiarFiltroPrioridad() }, modifier = Modifier.weight(1f)) {
-                        Text("Prioridad: ${filtro.prioridad}")
-                    }
+                // ---------- Botón para mostrar u ocultar los filtros ----------
+                Button(onClick = { viewModel.cambiarMostrarFiltros() }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (filtro.mostrarFiltros) "Ocultar filtros" else "Mostrar filtros")
                 }
 
-                // Filtros que solo usa el administrador
-                if (rol == "Administrador") {
-                    Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-                        Button(onClick = { viewModel.cambiarFiltroCliente() }, modifier = Modifier.weight(1f)) {
-                            Text("Cliente: ${filtro.cliente.substringBefore("@")}")
+                // ---------- Filtros (aparecen y desaparecen con animación) ----------
+                AnimatedVisibility(visible = filtro.mostrarFiltros) {
+                    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                            Button(onClick = { viewModel.cambiarFiltroEstado() }, modifier = Modifier.weight(1f)) {
+                                Text("Estado: ${filtro.estado}")
+                            }
+                            Button(onClick = { viewModel.cambiarFiltroPrioridad() }, modifier = Modifier.weight(1f)) {
+                                Text("Prioridad: ${filtro.prioridad}")
+                            }
                         }
-                        Button(onClick = { viewModel.cambiarFiltroResponsable() }, modifier = Modifier.weight(1f)) {
-                            Text("Técnico: ${filtro.responsable.substringBefore("@")}")
-                        }
-                    }
-                }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-                    Button(onClick = { viewModel.cambiarSoloAtrasadas() }, modifier = Modifier.weight(1f)) {
-                        Text(if (filtro.soloAtrasadas) "Viendo atrasadas" else "Solo atrasadas")
-                    }
-                    Button(onClick = { viewModel.limpiarFiltros() }, modifier = Modifier.weight(1f)) {
-                        Text("Limpiar filtros")
+                        // Filtros que solo usa el administrador
+                        if (rol == "Administrador") {
+                            Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                                Button(onClick = { viewModel.cambiarFiltroCliente() }, modifier = Modifier.weight(1f)) {
+                                    Text("Cliente: ${filtro.cliente.substringBefore("@")}")
+                                }
+                                Button(onClick = { viewModel.cambiarFiltroResponsable() }, modifier = Modifier.weight(1f)) {
+                                    Text("Técnico: ${filtro.responsable.substringBefore("@")}")
+                                }
+                            }
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+                            Button(onClick = { viewModel.cambiarSoloAtrasadas() }, modifier = Modifier.weight(1f)) {
+                                Text(if (filtro.soloAtrasadas) "Viendo atrasadas" else "Solo atrasadas")
+                            }
+                            Button(onClick = { viewModel.limpiarFiltros() }, modifier = Modifier.weight(1f)) {
+                                Text("Limpiar filtros")
+                            }
+                        }
                     }
                 }
 
@@ -109,9 +119,11 @@ fun ListaSolicitudesScreen(
         }
 
         // ---------- Lista ----------
-        items(visibles) { s ->
+        // key = id permite animar cada solicitud cuando cambia la lista
+        items(visibles, key = { it.id }) { s ->
             Column(
                 Modifier
+                    .animateItem()
                     .fillMaxWidth()
                     .clickable {
                         // Todos los perfiles pueden ver el detalle

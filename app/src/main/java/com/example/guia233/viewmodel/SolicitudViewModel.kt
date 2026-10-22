@@ -47,7 +47,8 @@ data class FiltroUiState(
     val prioridad: String = "Todas",
     val cliente: String = "Todos",
     val responsable: String = "Todos",
-    val soloAtrasadas: Boolean = false
+    val soloAtrasadas: Boolean = false,
+    val mostrarFiltros: Boolean = false
 )
 
 class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
@@ -333,8 +334,14 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         _filtro.update { it.copy(soloAtrasadas = !it.soloAtrasadas) }
     }
 
+    // Muestra u oculta los botones de filtros
+    fun cambiarMostrarFiltros() {
+        _filtro.update { it.copy(mostrarFiltros = !it.mostrarFiltros) }
+    }
+
+    // Limpia los filtros, pero deja los botones abiertos si estaban abiertos
     fun limpiarFiltros() {
-        _filtro.value = FiltroUiState()
+        _filtro.value = FiltroUiState(mostrarFiltros = _filtro.value.mostrarFiltros)
     }
 
     // Tiempo máximo sin resolver: 3 días.
