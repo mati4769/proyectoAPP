@@ -208,6 +208,8 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                     )
                 )
                 registrarHistorial(nuevoId, "-", "Recibida", "Solicitud creada")
+                // Se deja seleccionada para abrir su detalle (con su QR) al terminar
+                verDetalle(nuevoId)
             }
             _estado.value = SolicitudUiState(guardadoExitosamente = true)
             onListo()
