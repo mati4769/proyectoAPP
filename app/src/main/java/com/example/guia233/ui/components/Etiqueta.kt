@@ -1,4 +1,4 @@
-package com.example.guia233.ui.screen
+package com.example.guia233.ui.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme

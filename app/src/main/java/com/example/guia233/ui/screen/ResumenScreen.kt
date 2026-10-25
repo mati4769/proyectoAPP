@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.guia233.model.usuariosDemo
+import com.example.guia233.ui.components.Etiqueta
 import com.example.guia233.ui.theme.colorEstado
 import com.example.guia233.ui.theme.colorPrioridad
 import com.example.guia233.viewmodel.SolicitudViewModel
