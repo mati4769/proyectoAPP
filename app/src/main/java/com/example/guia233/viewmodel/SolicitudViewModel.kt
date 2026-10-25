@@ -292,6 +292,13 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Elimina una solicitud finalizada (solo la usa el administrador)
+    fun eliminar(s: SolicitudEntity) {
+        viewModelScope.launch {
+            repository.eliminar(s)
+        }
+    }
+
     // ---------- Filtros, búsqueda y atrasadas ----------
 
     // Opciones de cada filtro (la primera significa "sin filtrar")
@@ -362,7 +369,9 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             val coincideBusqueda = f.busqueda.isBlank() ||
                     s.codigo.contains(f.busqueda, ignoreCase = true) ||
                     s.titulo.contains(f.busqueda, ignoreCase = true)
-            val coincideEstado = f.estado == "Todos" || s.estado == f.estado
+            // Las finalizadas no se muestran en "Todos", solo si se elige ese estado
+            val finalizada = s.estado == "Cerrada" || s.estado == "Cancelada"
+            val coincideEstado = if (f.estado == "Todos") !finalizada else s.estado == f.estado
             val coincidePrioridad = f.prioridad == "Todas" || s.prioridad == f.prioridad
             val coincideCliente = f.cliente == "Todos" || s.clienteCorreo == f.cliente
             val coincideResponsable = f.responsable == "Todos" || s.responsable == f.responsable

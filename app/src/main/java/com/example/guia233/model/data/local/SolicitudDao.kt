@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import androidx.room.Delete
 
 @Dao
 interface SolicitudDao {
@@ -15,6 +16,13 @@ interface SolicitudDao {
 
     @Update
     suspend fun actualizar(solicitud: SolicitudEntity)
+
+    @Delete
+    suspend fun eliminar(solicitud: SolicitudEntity)
+
+    // Borra el historial de una solicitud (para no dejar registros sueltos)
+    @Query("DELETE FROM historial WHERE solicitudId = :solicitudId")
+    suspend fun eliminarHistorial(solicitudId: Long)
 
     @Query("SELECT * FROM solicitudes ORDER BY id DESC")
     fun obtenerTodas(): Flow<List<SolicitudEntity>>

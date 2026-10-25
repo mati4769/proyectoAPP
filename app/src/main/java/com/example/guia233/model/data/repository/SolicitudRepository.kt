@@ -15,6 +15,11 @@ class SolicitudRepository(private val dao: SolicitudDao) {
         dao.actualizar(solicitud)
     }
 
+    suspend fun eliminar(solicitud: SolicitudEntity) {
+        dao.eliminarHistorial(solicitud.id)
+        dao.eliminar(solicitud)
+    }
+
     suspend fun buscarPorCodigo(codigo: String): SolicitudEntity? {
         return dao.buscarPorCodigo(codigo)
     }

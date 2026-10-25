@@ -292,6 +292,21 @@ fun DetalleSolicitudScreen(
                     }
                 }
 
+                // ---------- Eliminar (solo administrador y solo si está finalizada) ----------
+                if (rol == "Administrador" && !abierta) {
+                    Seccion("Solicitud finalizada") {
+                        Button(
+                            onClick = {
+                                viewModel.eliminar(s)
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Eliminar solicitud")
+                        }
+                    }
+                }
+
                 // ---------- Acciones del técnico ----------
                 if (rol == "Técnico" && abierta) {
                     Seccion("Acciones") {
