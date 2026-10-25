@@ -24,6 +24,7 @@ import com.example.guia233.ui.theme.colorEstado
 import com.example.guia233.ui.theme.colorPrioridad
 import com.example.guia233.viewmodel.SolicitudViewModel
 
+// Resumen general para el administrador
 @Composable
 fun ResumenScreen(viewModel: SolicitudViewModel) {
     // Se usan las mismas solicitudes guardadas en Room, así los números coinciden
@@ -44,6 +45,7 @@ fun ResumenScreen(viewModel: SolicitudViewModel) {
 
                 // ---------- Totales grandes ----------
                 Row(horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {
+                    // Total de solicitudes
                     Card(
                         modifier = Modifier.weight(1f),
                         colors = CardDefaults.cardColors(
@@ -59,6 +61,7 @@ fun ResumenScreen(viewModel: SolicitudViewModel) {
                             Text("Total", color = MaterialTheme.colorScheme.onPrimary)
                         }
                     }
+                    // Solicitudes atrasadas
                     Card(
                         modifier = Modifier.weight(1f),
                         colors = CardDefaults.cardColors(

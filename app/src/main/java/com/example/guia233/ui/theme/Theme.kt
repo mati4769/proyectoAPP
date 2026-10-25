@@ -7,6 +7,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+// Colores de la app en modo claro
 private val LightColorScheme = lightColorScheme(
     primary = AzulOscuro,
     onPrimary = Color.White,
@@ -21,6 +22,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = Color(0xFFE8EEF5)
 )
 
+// Colores de la app en modo oscuro
 private val DarkColorScheme = darkColorScheme(
     primary = AzulNoche,
     onPrimary = Color(0xFF0A2540),
@@ -42,6 +44,7 @@ fun Guia233Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    // Elige los colores según el modo del teléfono
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(

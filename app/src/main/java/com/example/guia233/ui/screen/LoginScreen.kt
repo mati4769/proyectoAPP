@@ -23,12 +23,14 @@ import androidx.navigation.NavController
 import com.example.guia233.viewmodel.LoginViewModel
 import com.example.guia233.model.Usuario
 
+// Pantalla de inicio de sesión
 @Composable
 fun LoginScreen(
     navController: NavController,
     viewModel: LoginViewModel,
     onIngresar: (Usuario) -> Unit
 ) {
+    // Observa el estado del login en el ViewModel
     val estado by viewModel.estado.collectAsState()
 
     Column(
@@ -40,7 +42,7 @@ fun LoginScreen(
     ) {
         // ---------- Encabezado con el nombre de la app ----------
         Text(
-            "Mesa de Solicitudes",
+            "proyecto_evaluacion_APP",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.primary
         )
@@ -65,6 +67,7 @@ fun LoginScreen(
             ) {
                 Text("Iniciar sesión", style = MaterialTheme.typography.titleLarge)
 
+                // Campo de correo con su mensaje de error
                 OutlinedTextField(
                     value = estado.correo,
                     onValueChange = viewModel::onCorreoChange,
@@ -74,6 +77,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                // Campo de contraseña (oculta los caracteres)
                 OutlinedTextField(
                     value = estado.clave,
                     onValueChange = viewModel::onClaveChange,
@@ -86,6 +90,7 @@ fun LoginScreen(
 
                 Button(
                     onClick = {
+                        // Si los datos son correctos, avisa quién entró y abre el menú
                         if (viewModel.validarFormulario()) {
                             onIngresar(viewModel.estado.value.usuario!!)
                             navController.navigate("menu")
@@ -98,6 +103,7 @@ fun LoginScreen(
             }
         }
 
+        // Aviso de que las cuentas son de prueba
         Text(
             "Solo cuentas ficticias de prueba",
             style = MaterialTheme.typography.bodySmall,

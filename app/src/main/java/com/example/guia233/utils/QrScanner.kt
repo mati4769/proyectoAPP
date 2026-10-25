@@ -24,12 +24,14 @@ import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
+// Muestra la cámara y lee códigos QR con ML Kit
 @SuppressLint("UnsafeOptInUsageError")
 @Composable
 fun QrScanner(
     onQrCodeScanned: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Contexto y ciclo de vida que necesita CameraX
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -56,6 +58,7 @@ fun QrScanner(
     // Gestionar la cámara fuera de AndroidView.update
     DisposableEffect(context, lifecycleOwner, previewView) {
 
+        // Hilo aparte para analizar las imágenes
         val cameraExecutor = Executors.newSingleThreadExecutor()
 
         // Configurar ML Kit para reconocer únicamente QR
@@ -63,8 +66,10 @@ fun QrScanner(
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
             .build()
 
+        // Lector de códigos de ML Kit
         val barcodeScanner = BarcodeScanning.getClient(options)
 
+        // Banderas: si ya se salió de la pantalla y si ya se leyó un QR
         val disposed = AtomicBoolean(false)
         val detected = AtomicBoolean(false)
 
@@ -82,6 +87,7 @@ fun QrScanner(
             )
             .build()
 
+        // Revisa cada imagen de la cámara buscando un QR
         imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
 
             if (disposed.get() || detected.get()) {
@@ -94,6 +100,7 @@ fun QrScanner(
                     imageProxy.close()
                 } else {
 
+                    // Convierte la imagen de la cámara al formato de ML Kit
                     val image = InputImage.fromMediaImage(
                         mediaImage,
                         imageProxy.imageInfo.rotationDegrees
@@ -103,6 +110,7 @@ fun QrScanner(
                         barcodeScanner.process(image)
                             .addOnSuccessListener { barcodes ->
 
+                                // Toma el primer QR válido encontrado
                                 val qr = barcodes.firstOrNull {
                                     it.format == Barcode.FORMAT_QR_CODE &&
                                             it.rawValue != null
@@ -113,6 +121,7 @@ fun QrScanner(
                                     !disposed.get() &&
                                     detected.compareAndSet(false, true)
                                 ) {
+                                    // Deja de analizar y envía el texto leído
                                     imageAnalysis.clearAnalyzer()
 
                                     currentCallback.value(
@@ -125,6 +134,7 @@ fun QrScanner(
                                     )
                                 }
                             }
+                            // Si falla el análisis, se registra el error
                             .addOnFailureListener { error ->
                                 Log.e(
                                     "QrScanner",
@@ -132,6 +142,7 @@ fun QrScanner(
                                     error
                                 )
                             }
+                            // Siempre se cierra la imagen para recibir la siguiente
                             .addOnCompleteListener {
                                 imageProxy.close()
                             }

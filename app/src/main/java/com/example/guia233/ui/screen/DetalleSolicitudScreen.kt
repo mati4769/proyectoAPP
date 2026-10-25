@@ -34,20 +34,24 @@ import com.example.guia233.ui.theme.colorPrioridad
 import com.example.guia233.utils.generarQr
 import com.example.guia233.viewmodel.SolicitudViewModel
 
+// Detalle de una solicitud: datos, QR, acciones según el perfil e historial
 @Composable
 fun DetalleSolicitudScreen(
     navController: NavController,
     viewModel: SolicitudViewModel
 ) {
+    // Observa las solicitudes, el historial y los campos del detalle
     val solicitudes by viewModel.solicitudes.collectAsState(initial = emptyList())
     val historial by remember { viewModel.historial(viewModel.seleccionadaId) }
         .collectAsState(initial = emptyList())
     val detalle by viewModel.detalle.collectAsState()
+    // Perfil del usuario para mostrar sus botones
     val rol = viewModel.rolActual()
 
     // Se busca la solicitud elegida en la lista
     val s = solicitudes.find { it.id == viewModel.seleccionadaId }
 
+    // Mientras Room carga los datos se muestra un mensaje
     if (s == null) {
         Text("Cargando...", modifier = Modifier.padding(16.dp))
         return
@@ -101,6 +105,14 @@ fun DetalleSolicitudScreen(
                             Etiqueta("Prioridad: ${s.prioridad}", colorPrioridad(s.prioridad))
                         }
                     }
+                }
+
+                // ---------- Botón para escanear un QR (igual que en el menú) ----------
+                Button(
+                    onClick = { navController.navigate("qr") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Escanear código QR")
                 }
 
                 // ---------- Datos de la solicitud ----------
@@ -174,6 +186,7 @@ fun DetalleSolicitudScreen(
                     Seccion("Acciones") {
                         Button(
                             onClick = {
+                                // Carga la solicitud en el formulario para editarla
                                 viewModel.cargarSolicitud(s)
                                 navController.navigate("formulario")
                             },
@@ -182,6 +195,7 @@ fun DetalleSolicitudScreen(
                             Text("Editar solicitud")
                         }
 
+                        // Solo si le pidieron información
                         if (s.estado == "Pendiente de información") {
                             Button(
                                 onClick = { viewModel.cambiarEstado(s, "En revisión", "Cliente respondió información", true) },
@@ -191,6 +205,7 @@ fun DetalleSolicitudScreen(
                             }
                         }
 
+                        // Cuando está resuelta, el cliente confirma o pide reabrir
                         if (s.estado == "Resuelta") {
                             Button(
                                 onClick = { viewModel.cambiarEstado(s, "Cerrada", "Cliente confirmó la resolución") },
@@ -210,6 +225,7 @@ fun DetalleSolicitudScreen(
 
                 // ---------- Acciones del administrador ----------
                 if (rol == "Administrador" && abierta) {
+                    // Cambiar el estado de la solicitud
                     Seccion("Estado") {
                         Button(
                             onClick = { viewModel.cambiarEstado(s, "En revisión", "Solicitud en revisión") },
@@ -225,6 +241,7 @@ fun DetalleSolicitudScreen(
                         }
                     }
 
+                    // Cambiar la categoría
                     Seccion("Clasificar") {
                         OutlinedTextField(
                             value = detalle.categoria,
@@ -240,6 +257,7 @@ fun DetalleSolicitudScreen(
                         }
                     }
 
+                    // Definir la prioridad
                     Seccion("Prioridad") {
                         Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                             Button(onClick = { viewModel.cambiarPrioridad(s, "Baja") }, modifier = Modifier.weight(1f)) {
@@ -259,6 +277,7 @@ fun DetalleSolicitudScreen(
                         }
                     }
 
+                    // Un botón por cada técnico
                     Seccion("Asignar responsable") {
                         usuariosDemo.filter { it.rol == "Técnico" }.forEach { tecnico ->
                             Button(
@@ -270,6 +289,7 @@ fun DetalleSolicitudScreen(
                         }
                     }
 
+                    // Comentario interno, cerrar o cancelar
                     Seccion("Seguimiento") {
                         Button(
                             onClick = { viewModel.comentar(s, "Comentario interno") },
@@ -297,6 +317,7 @@ fun DetalleSolicitudScreen(
                     Seccion("Solicitud finalizada") {
                         Button(
                             onClick = {
+                                // Borra la solicitud y vuelve a la lista
                                 viewModel.eliminar(s)
                                 navController.popBackStack()
                             },
@@ -337,6 +358,7 @@ fun DetalleSolicitudScreen(
                     }
                 }
 
+                // Título de la sección del historial
                 Text(
                     "Historial",
                     style = MaterialTheme.typography.titleLarge,
@@ -358,6 +380,7 @@ fun DetalleSolicitudScreen(
                     Modifier.padding(all = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(space = 4.dp)
                 ) {
+                    // Acción, fecha, cambio de estado, usuario y comentario
                     Text(h.accion, style = MaterialTheme.typography.titleSmall)
                     Text(
                         h.fecha,

@@ -12,10 +12,12 @@ import androidx.compose.ui.unit.dp
 // Pequeña etiqueta de color para mostrar estado, prioridad o "Atrasada"
 @Composable
 fun Etiqueta(texto: String, color: Color) {
+    // Fondo de color con bordes redondeados
     Surface(
         color = color,
         shape = MaterialTheme.shapes.small
     ) {
+        // Texto blanco encima del color
         Text(
             texto,
             color = Color.White,

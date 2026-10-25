@@ -42,6 +42,7 @@ android {
 }
 
 dependencies {
+    // Navegación entre pantallas (Navigation Compose)
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // Dependencias Room
@@ -51,6 +52,7 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")  // <-- ESTA LÍNEA ES LA CLAVE
 
+    // ViewModel en Compose, StateFlow y corrutinas
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0-rc02")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

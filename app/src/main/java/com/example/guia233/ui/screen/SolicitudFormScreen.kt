@@ -23,11 +23,13 @@ import com.example.guia233.ui.components.Etiqueta
 import com.example.guia233.ui.theme.colorEstado
 import com.example.guia233.viewmodel.SolicitudViewModel
 
+// Formulario para crear o editar una solicitud
 @Composable
 fun SolicitudFormScreen(
     navController: NavController,
     viewModel: SolicitudViewModel
 ) {
+    // Observa el estado del formulario en el ViewModel
     val estado by viewModel.estado.collectAsState()
 
     // Abre la galería del dispositivo para elegir una imagen
@@ -45,6 +47,7 @@ fun SolicitudFormScreen(
             .padding(all = 16.dp),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
+        // Si hay una solicitud cargada se está editando; si no, es nueva
         val editando = estado.solicitudEditando
         if (editando != null) {
             Text(
@@ -88,6 +91,7 @@ fun SolicitudFormScreen(
             )
         ) {
             Column(Modifier.padding(all = 16.dp)) {
+                // Cada campo muestra su error en rojo si no es válido
                 OutlinedTextField(
                     value = estado.titulo,
                     onValueChange = viewModel::onTituloChange,
@@ -143,6 +147,7 @@ fun SolicitudFormScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Button(
+                    // Abre la galería para elegir la imagen
                     onClick = { elegirImagen.launch("image/*") },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -153,6 +158,7 @@ fun SolicitudFormScreen(
 
         Button(
             onClick = {
+                // Solo guarda si todos los campos son válidos
                 if (viewModel.validarFormulario()) {
                     viewModel.guardar {
                         navController.popBackStack()
@@ -163,6 +169,7 @@ fun SolicitudFormScreen(
                     }
                 }
             },
+            // Se desactiva mientras guarda para no guardar dos veces
             enabled = !estado.guardando,
             modifier = Modifier.fillMaxWidth()
         ) {

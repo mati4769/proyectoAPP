@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Guia 2.3.3"
+rootProject.name = "proyectoAPP"
 include(":app")
  

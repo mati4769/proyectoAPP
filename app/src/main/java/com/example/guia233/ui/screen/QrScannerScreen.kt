@@ -15,6 +15,7 @@ import androidx.navigation.NavController
 import com.example.guia233.utils.QrScanner
 import com.example.guia233.viewmodel.SolicitudViewModel
 
+// Pantalla para escanear el QR de una solicitud
 @Composable
 fun QrScannerScreen(
     navController: NavController,
@@ -22,8 +23,10 @@ fun QrScannerScreen(
     hasCameraPermission: Boolean,
     onRequestPermission: () -> Unit
 ) {
+    // Observa el código leído y la solicitud encontrada
     val qrLeido by viewModel.qrLeido.collectAsState()
     val solicitud by viewModel.solicitudQr.collectAsState()
+    // Contexto para mostrar el mensaje (Toast)
     val context = LocalContext.current
 
     Column(
@@ -33,6 +36,7 @@ fun QrScannerScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // 1) Sin permiso: pide permiso de cámara
         if (!hasCameraPermission) {
             Text(
                 "Permiso de cámara requerido",
@@ -50,6 +54,7 @@ fun QrScannerScreen(
                 Text("Conceder permiso de cámara")
             }
         } else if (qrLeido == null) {
+            // 2) Con permiso y sin leer: muestra la cámara
             Text(
                 "Escanea el QR de una solicitud",
                 style = MaterialTheme.typography.titleLarge,
@@ -61,6 +66,7 @@ fun QrScannerScreen(
                     .fillMaxWidth()
                     .height(400.dp)
             ) {
+                // Cámara que lee el QR y se lo pasa al ViewModel
                 QrScanner(
                     onQrCodeScanned = { qrContent ->
                         viewModel.onQrDetected(qrContent)
@@ -87,6 +93,7 @@ fun QrScannerScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
+            // 3) QR leído: muestra la solicitud encontrada
             Text(
                 "QR Detectado:",
                 style = MaterialTheme.typography.titleMedium,
@@ -114,6 +121,7 @@ fun QrScannerScreen(
                 }
             }
             Spacer(Modifier.height(16.dp))
+            // Vuelve a mostrar la cámara
             Button(
                 onClick = { viewModel.clearResult() },
                 modifier = Modifier.fillMaxWidth()

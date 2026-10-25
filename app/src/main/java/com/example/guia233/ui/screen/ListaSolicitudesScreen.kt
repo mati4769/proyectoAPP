@@ -28,13 +28,16 @@ import com.example.guia233.ui.theme.colorEstado
 import com.example.guia233.ui.theme.colorPrioridad
 import com.example.guia233.viewmodel.SolicitudViewModel
 
+// Pantalla con la lista de solicitudes, búsqueda y filtros
 @Composable
 fun ListaSolicitudesScreen(
     navController: NavController,
     viewModel: SolicitudViewModel
 ) {
+    // Observa las solicitudes de Room y los filtros
     val solicitudes by viewModel.solicitudes.collectAsState(initial = emptyList())
     val filtro by viewModel.filtro.collectAsState()
+    // Perfil del usuario actual
     val rol = viewModel.rolActual()
 
     // Lista después de aplicar la búsqueda y los filtros
@@ -51,6 +54,7 @@ fun ListaSolicitudesScreen(
                 Modifier.padding(top = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(space = 8.dp)
             ) {
+                // El título cambia según el perfil
                 val titulo = when (rol) {
                     "Administrador" -> "Todas las solicitudes"
                     "Técnico" -> "Solicitudes asignadas"
@@ -108,6 +112,7 @@ fun ListaSolicitudesScreen(
                             Modifier.padding(all = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
                         ) {
+                            // Filtros de estado y prioridad (cada toque cambia la opción)
                             Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                                 Button(onClick = { viewModel.cambiarFiltroEstado() }, modifier = Modifier.weight(1f)) {
                                     Text("Estado: ${filtro.estado}")
@@ -129,6 +134,7 @@ fun ListaSolicitudesScreen(
                                 }
                             }
 
+                            // Solo atrasadas y limpiar filtros
                             Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                                 Button(onClick = { viewModel.cambiarSoloAtrasadas() }, modifier = Modifier.weight(1f)) {
                                     Text(if (filtro.soloAtrasadas) "Viendo atrasadas" else "Solo atrasadas")
@@ -141,12 +147,14 @@ fun ListaSolicitudesScreen(
                     }
                 }
 
+                // Cuántas solicitudes se están mostrando
                 Text(
                     "Mostrando ${visibles.size} de ${solicitudes.size}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
+                // Mensaje cuando no hay resultados
                 if (visibles.isEmpty()) {
                     Text("No hay solicitudes para mostrar")
                 }
@@ -187,6 +195,7 @@ fun ListaSolicitudesScreen(
                         Etiqueta(s.estado, colorEstado(s.estado))
                     }
 
+                    // Título y categoría
                     Text(s.titulo, style = MaterialTheme.typography.titleMedium)
                     Text(
                         s.categoria,
@@ -194,6 +203,7 @@ fun ListaSolicitudesScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    // Prioridad y aviso de atrasada
                     Row(horizontalArrangement = Arrangement.spacedBy(space = 8.dp)) {
                         Etiqueta("Prioridad: ${s.prioridad}", colorPrioridad(s.prioridad))
                         if (viewModel.esAtrasada(s)) {
@@ -201,6 +211,7 @@ fun ListaSolicitudesScreen(
                         }
                     }
 
+                    // Técnico responsable y última actualización
                     Text(
                         "Responsable: ${s.responsable ?: "Sin asignar"}",
                         style = MaterialTheme.typography.bodySmall

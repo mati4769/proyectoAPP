@@ -18,23 +18,28 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// Estado del formulario: campos, errores y la solicitud que se está editando
 data class SolicitudUiState(
     val titulo: String = "",
     val descripcion: String = "",
     val categoria: String = "",
     val servicio: String = "",
     val evidenciaUri: String? = null,
+    // Mensaje de error de cada campo (null = sin error)
     val tituloError: String? = null,
     val descripcionError: String? = null,
     val categoriaError: String? = null,
     val servicioError: String? = null,
+    // Si está guardando y si ya terminó de guardar
     val guardando: Boolean = false,
     val guardadoExitosamente: Boolean = false,
+    // Solicitud que se está editando (null si es nueva)
     val solicitudEditando: SolicitudEntity? = null
 )
 
 // Estado de los campos de la pantalla de detalle
 data class DetalleUiState(
+    // Comentario, su error y la nueva categoría
     val comentario: String = "",
     val comentarioError: String? = null,
     val categoria: String = ""
@@ -42,27 +47,33 @@ data class DetalleUiState(
 
 // Filtros y búsqueda de la lista
 data class FiltroUiState(
+    // Texto de búsqueda y la opción elegida en cada filtro
     val busqueda: String = "",
     val estado: String = "Todos",
     val prioridad: String = "Todas",
     val cliente: String = "Todos",
     val responsable: String = "Todos",
+    // Ver solo atrasadas y si los botones de filtros están abiertos
     val soloAtrasadas: Boolean = false,
     val mostrarFiltros: Boolean = false
 )
 
+// ViewModel de las solicitudes: formulario, detalle, filtros y QR
 class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
+    // Repository para leer y guardar en Room
     private val repository = SolicitudRepository(AppDatabase.getDatabase(app).solicitudDao())
 
     // Usuario que inició sesión
     private var usuario: Usuario? = null
 
+    // Guarda quién inició sesión y limpia los filtros
     fun iniciarSesion(u: Usuario) {
         usuario = u
         _filtro.value = FiltroUiState()
     }
 
+    // Perfil del usuario actual (Cliente, Administrador o Técnico)
     fun rolActual(): String {
         return usuario?.rol ?: ""
     }
@@ -84,6 +95,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
     // Solicitud elegida en la lista para ver su detalle
     var seleccionadaId: Long = 0
 
+    // Guarda qué solicitud se abrió y limpia los campos del detalle
     fun verDetalle(id: Long) {
         seleccionadaId = id
         _detalle.value = DetalleUiState()
@@ -114,6 +126,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
+    // Estado del formulario que observa la pantalla
     private val _estado = MutableStateFlow(SolicitudUiState())
     val estado: StateFlow<SolicitudUiState> = _estado
 
@@ -134,18 +147,22 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
+    // Actualiza el título y borra su error
     fun onTituloChange(valor: String) {
         _estado.update { it.copy(titulo = valor, tituloError = null) }
     }
 
+    // Actualiza la descripción y borra su error
     fun onDescripcionChange(valor: String) {
         _estado.update { it.copy(descripcion = valor, descripcionError = null) }
     }
 
+    // Actualiza la categoría y borra su error
     fun onCategoriaChange(valor: String) {
         _estado.update { it.copy(categoria = valor, categoriaError = null) }
     }
 
+    // Actualiza el servicio y borra su error
     fun onServicioChange(valor: String) {
         _estado.update { it.copy(servicio = valor, servicioError = null) }
     }
@@ -155,6 +172,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         _estado.update { it.copy(evidenciaUri = uri) }
     }
 
+    // Revisa los campos obligatorios; devuelve true si todo está bien
     fun validarFormulario(): Boolean {
         val e = _estado.value
         val tituloError = if (e.titulo.isBlank()) "Campo obligatorio" else null
@@ -174,6 +192,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         return listOfNotNull(tituloError, descripcionError, categoriaError, servicioError).isEmpty()
     }
 
+    // Guarda la solicitud: si se está editando la actualiza, si no crea una nueva
     fun guardar(onListo: () -> Unit) {
         val s = _estado.value
         _estado.update { it.copy(guardando = true) }
@@ -193,6 +212,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                 )
                 registrarHistorial(editando.id, editando.estado, editando.estado, "Solicitud editada por el cliente")
             } else {
+                // Nueva: se crea con código único y estado "Recibida"
                 val nuevoId = repository.insertar(
                     SolicitudEntity(
                         codigo = "SOL-" + System.currentTimeMillis(),
@@ -211,6 +231,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
                 // Se deja seleccionada para abrir su detalle (con su QR) al terminar
                 verDetalle(nuevoId)
             }
+            // Limpia el formulario y avisa que terminó
             _estado.value = SolicitudUiState(guardadoExitosamente = true)
             onListo()
         }
@@ -218,13 +239,16 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---------- Acciones del detalle (administrador, técnico y cliente) ----------
 
+    // Estado de los campos del detalle
     private val _detalle = MutableStateFlow(DetalleUiState())
     val detalle: StateFlow<DetalleUiState> = _detalle
 
+    // Actualiza el comentario y borra su error
     fun onComentarioChange(valor: String) {
         _detalle.update { it.copy(comentario = valor, comentarioError = null) }
     }
 
+    // Actualiza la nueva categoría
     fun onCategoriaDetalleChange(valor: String) {
         _detalle.update { it.copy(categoria = valor) }
     }
@@ -255,6 +279,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // El administrador cambia la prioridad
     fun cambiarPrioridad(s: SolicitudEntity, prioridad: String) {
         viewModelScope.launch {
             repository.actualizar(s.copy(prioridad = prioridad, ultimaActualizacion = ahora()))
@@ -262,6 +287,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // El administrador cambia la categoría
     fun cambiarCategoria(s: SolicitudEntity) {
         val categoria = _detalle.value.categoria
         if (categoria.isBlank()) return
@@ -272,6 +298,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // El administrador asigna un técnico y la solicitud pasa a "Asignada"
     fun asignar(s: SolicitudEntity, tecnico: Usuario) {
         viewModelScope.launch {
             repository.actualizar(
@@ -307,12 +334,15 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         "Asignada", "En proceso", "Resuelta", "Cerrada", "Cancelada"
     )
     val prioridades = listOf("Todas", "Sin definir", "Baja", "Media", "Alta", "Urgente")
+    // Clientes y técnicos salen de las cuentas de prueba
     val clientes = listOf("Todos") + usuariosDemo.filter { it.rol == "Cliente" }.map { it.correo }
     val responsables = listOf("Todos") + usuariosDemo.filter { it.rol == "Técnico" }.map { it.correo }
 
+    // Estado de los filtros que observa la lista
     private val _filtro = MutableStateFlow(FiltroUiState())
     val filtro: StateFlow<FiltroUiState> = _filtro
 
+    // Actualiza el texto de búsqueda
     fun onBusquedaChange(valor: String) {
         _filtro.update { it.copy(busqueda = valor) }
     }
@@ -323,22 +353,27 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         return opciones[(i + 1) % opciones.size]
     }
 
+    // Cada botón de filtro pasa a la siguiente opción de su lista
     fun cambiarFiltroEstado() {
         _filtro.update { it.copy(estado = siguiente(estados, it.estado)) }
     }
 
+    // Pasa a la siguiente prioridad
     fun cambiarFiltroPrioridad() {
         _filtro.update { it.copy(prioridad = siguiente(prioridades, it.prioridad)) }
     }
 
+    // Pasa al siguiente cliente (solo administrador)
     fun cambiarFiltroCliente() {
         _filtro.update { it.copy(cliente = siguiente(clientes, it.cliente)) }
     }
 
+    // Pasa al siguiente técnico (solo administrador)
     fun cambiarFiltroResponsable() {
         _filtro.update { it.copy(responsable = siguiente(responsables, it.responsable)) }
     }
 
+    // Activa o desactiva "Solo atrasadas"
     fun cambiarSoloAtrasadas() {
         _filtro.update { it.copy(soloAtrasadas = !it.soloAtrasadas) }
     }
@@ -386,9 +421,11 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
     private val _qrLeido = MutableStateFlow<String?>(null)
     val qrLeido: StateFlow<String?> = _qrLeido
 
+    // Solicitud encontrada con ese código
     private val _solicitudQr = MutableStateFlow<SolicitudEntity?>(null)
     val solicitudQr: StateFlow<SolicitudEntity?> = _solicitudQr
 
+    // Busca en Room la solicitud del código leído
     fun onQrDetected(codigo: String) {
         viewModelScope.launch {
             val encontrada = repository.buscarPorCodigo(codigo)
@@ -402,6 +439,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Limpia el resultado para escanear otro QR
     fun clearResult() {
         _qrLeido.value = null
         _solicitudQr.value = null

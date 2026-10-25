@@ -18,6 +18,7 @@ import com.example.guia233.navigation.AppNavigation
 import com.example.guia233.ui.theme.Guia233Theme
 import com.example.guia233.utils.CameraPermissionHelper
 
+// Punto de entrada: abre la app y pide el permiso de cámara
 class MainActivity : ComponentActivity() {
 
     // Estado para controlar si tenemos permiso
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Se ejecuta al abrir la app
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -42,12 +44,14 @@ class MainActivity : ComponentActivity() {
         // Verificar permiso inicial
         hasCameraPermission = CameraPermissionHelper.hasCameraPermission(this)
 
+        // Muestra la app con el tema y la navegación
         setContent {
             Guia233Theme {
                 Scaffold { innerPadding ->
                     Box(modifier = Modifier.padding(paddingValues = innerPadding)) {
                         AppNavigation(
                             hasCameraPermission = hasCameraPermission,
+                            // Pide el permiso cuando la pantalla del QR lo necesita
                             onRequestPermission = {
                                 requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                             }
@@ -58,6 +62,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Se ejecuta al volver a la app
     override fun onResume() {
         super.onResume()
         // Actualizar estado del permiso cuando la app se reanuda

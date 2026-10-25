@@ -9,6 +9,7 @@ val Turquesa = Color(0xFF00897B)
 val TurquesaClaro = Color(0xFFCCEFEA)
 val FondoClaro = Color(0xFFF4F7FB)
 
+// Colores para el modo oscuro
 val AzulNoche = Color(0xFF9CC7F0)
 val AzulNocheContenedor = Color(0xFF1E3A56)
 val TurquesaNoche = Color(0xFF66CDBF)

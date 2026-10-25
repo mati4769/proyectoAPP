@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.guia233.model.Usuario
 
+// Menú principal: muestra las opciones según el perfil
 @Composable
 fun MenuScreen(
     navController: NavController,
@@ -78,6 +79,7 @@ fun MenuScreen(
             navController.navigate("qr")
         }
 
+        // Cierra la sesión y vuelve al login
         Button(
             onClick = {
                 onCerrarSesion()
