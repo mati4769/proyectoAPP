@@ -1,4 +1,4 @@
-# Mesa de Solicitudes
+# proyecto_evaluacion_APP
 
 App Android para registrar y hacer seguimiento de solicitudes de clientes (caso DSY1105 – Gestión móvil y seguimiento de solicitudes de clientes). Todos los datos son ficticios.
 
