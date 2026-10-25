@@ -120,6 +120,7 @@ fun QrScannerScreen(
             ) {
                 Text("Escanear otro código QR")
             }
+            // Vuelve a la pantalla anterior (menú o lista)
             Button(
                 onClick = {
                     viewModel.clearResult()
@@ -127,7 +128,7 @@ fun QrScannerScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Volver al menú")
+                Text("Volver")
             }
         }
     }

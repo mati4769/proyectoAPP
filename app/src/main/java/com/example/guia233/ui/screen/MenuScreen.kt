@@ -73,11 +73,9 @@ fun MenuScreen(
             }
         }
 
-        // El técnico solo trabaja con sus solicitudes asignadas
-        if (usuario?.rol != "Técnico") {
-            OpcionMenu("Escanear código QR", "Buscar una solicitud por su código") {
-                navController.navigate("qr")
-            }
+        // Todos los perfiles pueden escanear un código QR
+        OpcionMenu("Escanear código QR", "Buscar una solicitud por su código") {
+            navController.navigate("qr")
         }
 
         Button(

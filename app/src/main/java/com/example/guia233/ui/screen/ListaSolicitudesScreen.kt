@@ -75,6 +75,14 @@ fun ListaSolicitudesScreen(
                     }
                 }
 
+                // Acceso rápido al lector QR (lo pueden usar todos los perfiles)
+                Button(
+                    onClick = { navController.navigate("qr") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Escanear código QR")
+                }
+
                 // ---------- Búsqueda ----------
                 OutlinedTextField(
                     value = filtro.busqueda,
