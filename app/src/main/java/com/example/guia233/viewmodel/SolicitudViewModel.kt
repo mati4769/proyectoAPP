@@ -3,6 +3,10 @@ package com.example.guia233.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.guia233.model.DetalleUiState
+import com.example.guia233.model.FiltroUiState
+import com.example.guia233.model.SolicitudErrores
+import com.example.guia233.model.SolicitudUiState
 import com.example.guia233.model.Usuario
 import com.example.guia233.model.usuariosDemo
 import com.example.guia233.model.data.local.AppDatabase
@@ -17,46 +21,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-// Estado del formulario: campos, errores y la solicitud que se está editando
-data class SolicitudUiState(
-    val titulo: String = "",
-    val descripcion: String = "",
-    val categoria: String = "",
-    val servicio: String = "",
-    val evidenciaUri: String? = null,
-    // Mensaje de error de cada campo (null = sin error)
-    val tituloError: String? = null,
-    val descripcionError: String? = null,
-    val categoriaError: String? = null,
-    val servicioError: String? = null,
-    // Si está guardando y si ya terminó de guardar
-    val guardando: Boolean = false,
-    val guardadoExitosamente: Boolean = false,
-    // Solicitud que se está editando (null si es nueva)
-    val solicitudEditando: SolicitudEntity? = null
-)
-
-// Estado de los campos de la pantalla de detalle
-data class DetalleUiState(
-    // Comentario, su error y la nueva categoría
-    val comentario: String = "",
-    val comentarioError: String? = null,
-    val categoria: String = ""
-)
-
-// Filtros y búsqueda de la lista
-data class FiltroUiState(
-    // Texto de búsqueda y la opción elegida en cada filtro
-    val busqueda: String = "",
-    val estado: String = "Todos",
-    val prioridad: String = "Todas",
-    val cliente: String = "Todos",
-    val responsable: String = "Todos",
-    // Ver solo atrasadas y si los botones de filtros están abiertos
-    val soloAtrasadas: Boolean = false,
-    val mostrarFiltros: Boolean = false
-)
 
 // ViewModel de las solicitudes: formulario, detalle, filtros y QR
 class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
@@ -147,24 +111,44 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
-    // Actualiza el título y borra su error
+    // Actualiza el título y limpia su error
     fun onTituloChange(valor: String) {
-        _estado.update { it.copy(titulo = valor, tituloError = null) }
+        _estado.update {
+            it.copy(
+                titulo = valor,
+                errores = it.errores.copy(titulo = null)
+            )
+        }
     }
 
-    // Actualiza la descripción y borra su error
+    // Actualiza la descripción y limpia su error
     fun onDescripcionChange(valor: String) {
-        _estado.update { it.copy(descripcion = valor, descripcionError = null) }
+        _estado.update {
+            it.copy(
+                descripcion = valor,
+                errores = it.errores.copy(descripcion = null)
+            )
+        }
     }
 
-    // Actualiza la categoría y borra su error
+    // Actualiza la categoría y limpia su error
     fun onCategoriaChange(valor: String) {
-        _estado.update { it.copy(categoria = valor, categoriaError = null) }
+        _estado.update {
+            it.copy(
+                categoria = valor,
+                errores = it.errores.copy(categoria = null)
+            )
+        }
     }
 
-    // Actualiza el servicio y borra su error
+    // Actualiza el servicio y limpia su error
     fun onServicioChange(valor: String) {
-        _estado.update { it.copy(servicio = valor, servicioError = null) }
+        _estado.update {
+            it.copy(
+                servicio = valor,
+                errores = it.errores.copy(servicio = null)
+            )
+        }
     }
 
     // Guarda la imagen elegida desde el dispositivo
@@ -172,24 +156,40 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         _estado.update { it.copy(evidenciaUri = uri) }
     }
 
-    // Revisa los campos obligatorios; devuelve true si todo está bien
+    // Validación global del formulario
     fun validarFormulario(): Boolean {
-        val e = _estado.value
-        val tituloError = if (e.titulo.isBlank()) "Campo obligatorio" else null
-        val descripcionError = if (e.descripcion.length < 10) "Debe tener al menos 10 caracteres" else null
-        val categoriaError = if (e.categoria.isBlank()) "Campo obligatorio" else null
-        val servicioError = if (e.servicio.isBlank()) "Campo obligatorio" else null
+        val estadoActual = _estado.value
+
+        val errores = SolicitudErrores(
+            titulo = if (estadoActual.titulo.isBlank())
+                "Campo obligatorio"
+            else null,
+
+            descripcion = if (estadoActual.descripcion.length < 10)
+                "Debe tener al menos 10 caracteres"
+            else null,
+
+            categoria = if (estadoActual.categoria.isBlank())
+                "Campo obligatorio"
+            else null,
+
+            servicio = if (estadoActual.servicio.isBlank())
+                "Campo obligatorio"
+            else null
+        )
+
+        val hayErrores = listOfNotNull(
+            errores.titulo,
+            errores.descripcion,
+            errores.categoria,
+            errores.servicio
+        ).isNotEmpty()
 
         _estado.update {
-            it.copy(
-                tituloError = tituloError,
-                descripcionError = descripcionError,
-                categoriaError = categoriaError,
-                servicioError = servicioError
-            )
+            it.copy(errores = errores)
         }
 
-        return listOfNotNull(tituloError, descripcionError, categoriaError, servicioError).isEmpty()
+        return !hayErrores
     }
 
     // Guarda la solicitud: si se está editando la actualiza, si no crea una nueva
@@ -245,7 +245,12 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     // Actualiza el comentario y borra su error
     fun onComentarioChange(valor: String) {
-        _detalle.update { it.copy(comentario = valor, comentarioError = null) }
+        _detalle.update {
+            it.copy(
+                comentario = valor,
+                errores = it.errores.copy(comentario = null)
+            )
+        }
     }
 
     // Actualiza la nueva categoría
@@ -256,7 +261,7 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
     // Revisa que se haya escrito un comentario cuando la acción lo necesita
     private fun comentarioValido(): Boolean {
         if (_detalle.value.comentario.isBlank()) {
-            _detalle.update { it.copy(comentarioError = "Escribe un comentario") }
+            _detalle.update { it.copy(errores = it.errores.copy(comentario = "Escribe un comentario")) }
             return false
         }
         return true
@@ -398,6 +403,19 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         return !terminada && System.currentTimeMillis() - s.creadaEnMillis > limiteAtraso
     }
 
+    // Una solicitud cerrada o cancelada ya no se puede modificar
+    fun estaAbierta(s: SolicitudEntity): Boolean {
+        return s.estado != "Cerrada" && s.estado != "Cancelada"
+    }
+
+    // El cliente no ve los comentarios internos del historial
+    fun historialVisible(lista: List<HistorialEntity>): List<HistorialEntity> {
+        if (usuario?.rol == "Cliente") {
+            return lista.filter { it.accion != "Comentario interno" }
+        }
+        return lista
+    }
+
     // Aplica la búsqueda y todos los filtros a la lista
     fun aplicarFiltros(lista: List<SolicitudEntity>, f: FiltroUiState): List<SolicitudEntity> {
         return lista.filter { s ->
@@ -431,6 +449,9 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
             val encontrada = repository.buscarPorCodigo(codigo)
             // El cliente no puede ver solicitudes de otros clientes
             if (usuario?.rol == "Cliente" && encontrada?.clienteCorreo != usuario?.correo) {
+                _solicitudQr.value = null
+            } else if (usuario?.rol == "Técnico" && encontrada?.responsable != usuario?.correo) {
+                // El técnico no puede ver solicitudes asignadas a otro técnico
                 _solicitudQr.value = null
             } else {
                 _solicitudQr.value = encontrada

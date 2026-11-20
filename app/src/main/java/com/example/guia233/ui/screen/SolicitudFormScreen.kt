@@ -1,5 +1,6 @@
 package com.example.guia233.ui.screen
 
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.guia233.ui.components.Etiqueta
@@ -31,6 +33,8 @@ fun SolicitudFormScreen(
 ) {
     // Observa el estado del formulario en el ViewModel
     val estado by viewModel.estado.collectAsState()
+    // Contexto para mostrar el mensaje de confirmación (Toast)
+    val context = LocalContext.current
 
     // Abre la galería del dispositivo para elegir una imagen
     val elegirImagen = rememberLauncherForActivityResult(
@@ -96,8 +100,8 @@ fun SolicitudFormScreen(
                     value = estado.titulo,
                     onValueChange = viewModel::onTituloChange,
                     label = { Text("Título") },
-                    isError = estado.tituloError != null,
-                    supportingText = { Text(estado.tituloError ?: "") },
+                    isError = estado.errores.titulo != null,
+                    supportingText = { Text(estado.errores.titulo ?: "") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -105,8 +109,8 @@ fun SolicitudFormScreen(
                     value = estado.descripcion,
                     onValueChange = viewModel::onDescripcionChange,
                     label = { Text("Descripción") },
-                    isError = estado.descripcionError != null,
-                    supportingText = { Text(estado.descripcionError ?: "") },
+                    isError = estado.errores.descripcion != null,
+                    supportingText = { Text(estado.errores.descripcion ?: "") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -114,8 +118,8 @@ fun SolicitudFormScreen(
                     value = estado.categoria,
                     onValueChange = viewModel::onCategoriaChange,
                     label = { Text("Categoría (ej: Hosting, Incidente técnico)") },
-                    isError = estado.categoriaError != null,
-                    supportingText = { Text(estado.categoriaError ?: "") },
+                    isError = estado.errores.categoria != null,
+                    supportingText = { Text(estado.errores.categoria ?: "") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -123,8 +127,8 @@ fun SolicitudFormScreen(
                     value = estado.servicio,
                     onValueChange = viewModel::onServicioChange,
                     label = { Text("Servicio relacionado") },
-                    isError = estado.servicioError != null,
-                    supportingText = { Text(estado.servicioError ?: "") },
+                    isError = estado.errores.servicio != null,
+                    supportingText = { Text(estado.errores.servicio ?: "") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -161,6 +165,8 @@ fun SolicitudFormScreen(
                 // Solo guarda si todos los campos son válidos
                 if (viewModel.validarFormulario()) {
                     viewModel.guardar {
+                        // Mensaje de confirmación: la solicitud quedó guardada en Room
+                        Toast.makeText(context, "Solicitud guardada correctamente", Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
                         // Si es nueva, se abre su detalle para ver el código y el QR
                         if (editando == null) {

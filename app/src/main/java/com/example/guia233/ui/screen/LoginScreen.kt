@@ -16,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -72,9 +73,11 @@ fun LoginScreen(
                     value = estado.correo,
                     onValueChange = viewModel::onCorreoChange,
                     label = { Text("Ingrese Correo") },
-                    isError = estado.correoError != null,
-                    supportingText = { Text(estado.correoError ?: "") },
-                    modifier = Modifier.fillMaxWidth()
+                    isError = estado.errores.correo != null,
+                    supportingText = { Text(estado.errores.correo ?: "") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("campoCorreo") // Etiqueta para la prueba de interfaz
                 )
 
                 // Campo de contraseña (oculta los caracteres)
@@ -83,9 +86,11 @@ fun LoginScreen(
                     onValueChange = viewModel::onClaveChange,
                     label = { Text("Contraseña") },
                     visualTransformation = PasswordVisualTransformation(),
-                    isError = estado.claveError != null,
-                    supportingText = { Text(estado.claveError ?: "") },
-                    modifier = Modifier.fillMaxWidth()
+                    isError = estado.errores.clave != null,
+                    supportingText = { Text(estado.errores.clave ?: "") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("campoClave") // Etiqueta para la prueba de interfaz
                 )
 
                 Button(

@@ -10,12 +10,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.guia233.ui.screen.DetalleSolicitudScreen
 import com.example.guia233.ui.screen.LoginScreen
 import com.example.guia233.ui.screen.MenuScreen
+import com.example.guia233.ui.screen.PostsScreen
 import com.example.guia233.ui.screen.ListaSolicitudesScreen
 import com.example.guia233.ui.screen.QrScannerScreen
 import com.example.guia233.ui.screen.ResumenScreen
 import com.example.guia233.ui.screen.SolicitudFormScreen
 import com.example.guia233.viewmodel.SolicitudViewModel
 import com.example.guia233.viewmodel.LoginViewModel
+import com.example.guia233.viewmodel.PostViewModel
 
 // Navegación: define todas las pantallas (rutas) de la app
 @Composable
@@ -65,6 +67,11 @@ fun AppNavigation(
         // Escáner de códigos QR
         composable(route = "qr") {
             QrScannerScreen(navController, solicitudViewModel, hasCameraPermission, onRequestPermission)
+        }
+        // Solicitudes de prueba desde la API REST (Retrofit)
+        composable(route = "api") {
+            val postViewModel: PostViewModel = viewModel()
+            PostsScreen(viewModel = postViewModel)
         }
     }
 }

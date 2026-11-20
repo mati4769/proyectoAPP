@@ -17,10 +17,12 @@ App Android para registrar y hacer seguimiento de solicitudes de clientes (caso 
 - Técnico: cambiar estado, registrar avances y resolver.
 - Escanear el QR de una solicitud con la cámara.
 - Datos guardados en el celular con Room.
+- Solicitudes de prueba desde una API REST con Retrofit (GET, POST, PUT, PATCH y DELETE), solo administrador.
+- Pruebas unitarias con Kotest, MockK y kotlinx-coroutines-test, y pruebas de interfaz con Compose (lista de la API y formulario de login).
 
 ## Tecnologías
 
-Kotlin, Jetpack Compose (Material 3), MVVM, Navigation Compose, Room, CameraX + ML Kit (leer QR) y ZXing (generar QR).
+Kotlin, Jetpack Compose (Material 3), MVVM, Navigation Compose, Room, Retrofit, CameraX + ML Kit (leer QR), ZXing (generar QR), Kotest y MockK.
 
 ## Cómo ejecutar
 

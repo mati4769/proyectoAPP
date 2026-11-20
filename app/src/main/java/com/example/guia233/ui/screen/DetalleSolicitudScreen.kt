@@ -57,15 +57,9 @@ fun DetalleSolicitudScreen(
         return
     }
 
-    // Una solicitud cerrada o cancelada ya no se puede modificar
-    val abierta = s.estado != "Cerrada" && s.estado != "Cancelada"
-
-    // El cliente no ve los comentarios internos
-    val historialVisible = if (rol == "Cliente") {
-        historial.filter { it.accion != "Comentario interno" }
-    } else {
-        historial
-    }
+    // El ViewModel decide si se puede modificar y qué historial se muestra
+    val abierta = viewModel.estaAbierta(s)
+    val historialVisible = viewModel.historialVisible(historial)
 
     LazyColumn(
         Modifier
@@ -175,8 +169,8 @@ fun DetalleSolicitudScreen(
                         value = detalle.comentario,
                         onValueChange = viewModel::onComentarioChange,
                         label = { Text("Comentario") },
-                        isError = detalle.comentarioError != null,
-                        supportingText = { Text(detalle.comentarioError ?: "") },
+                        isError = detalle.errores.comentario != null,
+                        supportingText = { Text(detalle.errores.comentario ?: "") },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
