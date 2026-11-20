@@ -72,9 +72,11 @@ fun MenuScreen(
             OpcionMenu("Resumen general", "Cantidades por estado, prioridad y técnico") {
                 navController.navigate("resumen")
             }
-            OpcionMenu("Solicitudes desde API", "Datos de prueba con Retrofit (API REST)") {
-                navController.navigate("api")
-            }
+        }
+
+        // Catálogo externo de servicios (API REST), visible para todos los perfiles
+        OpcionMenu("Abrir catálogo", "Servicios que ofrece la empresa") {
+            navController.navigate("catalogo_menu")
         }
 
         // Todos los perfiles pueden escanear un código QR

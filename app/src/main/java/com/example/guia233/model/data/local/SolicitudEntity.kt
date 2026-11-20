@@ -21,6 +21,8 @@ data class SolicitudEntity(
     val fechaCreacion: String,
     // Ruta de la imagen adjunta (null si no tiene)
     val evidenciaUri: String? = null,
+    // Ruta de la imagen que adjunta el técnico como evidencia (null si no tiene)
+    val evidenciaTecnicoUri: String? = null,
     // Correo del cliente que creó la solicitud
     val clienteCorreo: String,
     // Prioridad que define el administrador

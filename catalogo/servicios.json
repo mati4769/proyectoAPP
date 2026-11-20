@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "servicio": "Mantenimiento web",
+    "categoria": "Web",
+    "descripcion": "Actualización y soporte de sitios web"
+  },
+  {
+    "id": 2,
+    "servicio": "Soporte de correo",
+    "categoria": "Soporte",
+    "descripcion": "Configuración y solución de problemas"
+  },
+  {
+    "id": 3,
+    "servicio": "Hosting",
+    "categoria": "Infraestructura",
+    "descripcion": "Alojamiento y gestión de sitios"
+  },
+  {
+    "id": 4,
+    "servicio": "Desarrollo web",
+    "categoria": "Web",
+    "descripcion": "Creación de sitios y páginas nuevas"
+  },
+  {
+    "id": 5,
+    "servicio": "Soporte tecnológico",
+    "categoria": "Soporte",
+    "descripcion": "Asistencia técnica en equipos y sistemas"
+  },
+  {
+    "id": 6,
+    "servicio": "Marketing digital",
+    "categoria": "Marketing",
+    "descripcion": "Campañas y presencia en redes sociales"
+  },
+  {
+    "id": 7,
+    "servicio": "Acceso o configuración",
+    "categoria": "Soporte",
+    "descripcion": "Cuentas, permisos y configuración de servicios"
+  },
+  {
+    "id": 8,
+    "servicio": "Dominios",
+    "categoria": "Infraestructura",
+    "descripcion": "Registro y renovación de dominios"
+  }
+]

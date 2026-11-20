@@ -1,5 +1,7 @@
 package com.example.guia233.ui.screen
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.guia233.model.usuariosDemo
 import com.example.guia233.ui.components.Etiqueta
 import com.example.guia233.ui.theme.colorEstado
 import com.example.guia233.ui.theme.colorPrioridad
@@ -48,8 +49,17 @@ fun DetalleSolicitudScreen(
     // Perfil del usuario para mostrar sus botones
     val rol = viewModel.rolActual()
 
-    // Se busca la solicitud elegida en la lista
-    val s = solicitudes.find { it.id == viewModel.seleccionadaId }
+    // El ViewModel busca la solicitud elegida en la lista
+    val s = viewModel.buscarSeleccionada(solicitudes)
+
+    // Abre la galería para que el técnico adjunte una evidencia
+    val elegirEvidencia = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null && s != null) {
+            viewModel.adjuntarEvidencia(s, uri.toString())
+        }
+    }
 
     // Mientras Room carga los datos se muestra un mensaje
     if (s == null) {
@@ -124,11 +134,64 @@ fun DetalleSolicitudScreen(
                         Dato("Categoría", s.categoria)
                         Dato("Servicio", s.servicio)
                         Dato("Responsable", s.responsable ?: "Sin asignar")
-                        Dato("Evidencia", if (s.evidenciaUri != null) "Sí" else "No")
                         Dato("Creada", s.fechaCreacion)
                         Dato("Última actualización", s.ultimaActualizacion)
                         if (s.resolucion != null) {
                             Dato("Resolución", "${s.resolucion}")
+                        }
+                    }
+                }
+
+                // ---------- Evidencias (imágenes del cliente y del técnico) ----------
+                // remember evita volver a leer la imagen cada vez que se redibuja la pantalla
+                val imagenCliente = remember(s.evidenciaUri) { viewModel.imagenEvidencia(s.evidenciaUri) }
+                val imagenTecnico = remember(s.evidenciaTecnicoUri) { viewModel.imagenEvidencia(s.evidenciaTecnicoUri) }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(all = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(space = 8.dp)
+                    ) {
+                        Text("Evidencias", style = MaterialTheme.typography.titleMedium)
+
+                        Text(
+                            "Del cliente",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (imagenCliente != null) {
+                            Image(
+                                bitmap = imagenCliente.asImageBitmap(),
+                                contentDescription = "Evidencia del cliente",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        } else {
+                            Text("Sin evidencia")
+                        }
+
+                        Text(
+                            "Del técnico",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (imagenTecnico != null) {
+                            Image(
+                                bitmap = imagenTecnico.asImageBitmap(),
+                                contentDescription = "Evidencia del técnico",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        } else {
+                            Text("Sin evidencia")
                         }
                     }
                 }
@@ -190,7 +253,7 @@ fun DetalleSolicitudScreen(
                         }
 
                         // Solo si le pidieron información
-                        if (s.estado == "Pendiente de información") {
+                        if (viewModel.pideInformacion(s)) {
                             Button(
                                 onClick = { viewModel.cambiarEstado(s, "En revisión", "Cliente respondió información", true) },
                                 modifier = Modifier.fillMaxWidth()
@@ -200,7 +263,7 @@ fun DetalleSolicitudScreen(
                         }
 
                         // Cuando está resuelta, el cliente confirma o pide reabrir
-                        if (s.estado == "Resuelta") {
+                        if (viewModel.esperaConfirmacion(s)) {
                             Button(
                                 onClick = { viewModel.cambiarEstado(s, "Cerrada", "Cliente confirmó la resolución") },
                                 modifier = Modifier.fillMaxWidth()
@@ -273,7 +336,7 @@ fun DetalleSolicitudScreen(
 
                     // Un botón por cada técnico
                     Seccion("Asignar responsable") {
-                        usuariosDemo.filter { it.rol == "Técnico" }.forEach { tecnico ->
+                        viewModel.tecnicos.forEach { tecnico ->
                             Button(
                                 onClick = { viewModel.asignar(s, tecnico) },
                                 modifier = Modifier.fillMaxWidth()
@@ -336,6 +399,12 @@ fun DetalleSolicitudScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Registrar avance")
+                        }
+                        Button(
+                            onClick = { elegirEvidencia.launch("image/*") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Adjuntar evidencia (imagen)")
                         }
                         Button(
                             onClick = { viewModel.cambiarEstado(s, "Pendiente de información", "Técnico requiere información", true) },

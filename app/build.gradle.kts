@@ -20,9 +20,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK release con la llave proyectoapp.jks (carpeta app)
+    signingConfigs {
+        create("release") {
+            storeFile = file("proyectoapp.jks")
+            storePassword = "proyecto123"
+            keyAlias = "proyectoapp"
+            keyPassword = "proyecto123"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

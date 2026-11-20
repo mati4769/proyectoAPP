@@ -3,11 +3,15 @@ package com.example.guia233.ui.screen
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -17,7 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -45,9 +51,11 @@ fun SolicitudFormScreen(
         }
     }
 
+    // verticalScroll permite deslizar el formulario si no cabe en la pantalla
     Column(
         Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(all = 16.dp),
         verticalArrangement = Arrangement.spacedBy(space = 12.dp)
     ) {
@@ -131,6 +139,14 @@ fun SolicitudFormScreen(
                     supportingText = { Text(estado.errores.servicio ?: "") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                // Abre el catálogo externo para elegir el servicio y su categoría
+                Button(
+                    onClick = { navController.navigate("catalogo") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Abrir catálogo")
+                }
             }
         }
 
@@ -150,6 +166,18 @@ fun SolicitudFormScreen(
                     if (estado.evidenciaUri != null) "Imagen adjunta" else "Sin adjuntar",
                     style = MaterialTheme.typography.bodyMedium
                 )
+
+                // Muestra la imagen adjunta (también al editar)
+                val imagen = remember(estado.evidenciaUri) { viewModel.imagenEvidencia(estado.evidenciaUri) }
+                if (imagen != null) {
+                    Image(
+                        bitmap = imagen.asImageBitmap(),
+                        contentDescription = "Evidencia adjunta",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                    )
+                }
                 Button(
                     // Abre la galería para elegir la imagen
                     onClick = { elegirImagen.launch("image/*") },

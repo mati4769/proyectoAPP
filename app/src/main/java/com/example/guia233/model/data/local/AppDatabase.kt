@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 // Base de datos Room con las tablas solicitudes e historial
-@Database(entities = [SolicitudEntity::class, HistorialEntity::class], version = 4)
+@Database(entities = [SolicitudEntity::class, HistorialEntity::class], version = 5)
 abstract class AppDatabase : RoomDatabase() {
 
     // Da acceso a las consultas del DAO

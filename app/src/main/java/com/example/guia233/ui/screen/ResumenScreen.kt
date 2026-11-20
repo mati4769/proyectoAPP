@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.guia233.model.usuariosDemo
 import com.example.guia233.ui.components.Etiqueta
 import com.example.guia233.ui.theme.colorEstado
 import com.example.guia233.ui.theme.colorPrioridad
@@ -70,7 +69,7 @@ fun ResumenScreen(viewModel: SolicitudViewModel) {
                     ) {
                         Column(Modifier.padding(all = 16.dp)) {
                             Text(
-                                "${solicitudes.count { viewModel.esAtrasada(it) }}",
+                                "${viewModel.contarAtrasadas(solicitudes)}",
                                 style = MaterialTheme.typography.displaySmall,
                                 color = MaterialTheme.colorScheme.onError
                             )
@@ -82,29 +81,29 @@ fun ResumenScreen(viewModel: SolicitudViewModel) {
                 // ---------- Por estado ----------
                 Seccion("Por estado") {
                     viewModel.estados.drop(1).forEach { estado ->
-                        FilaConteo(estado, solicitudes.count { it.estado == estado }, colorEstado(estado))
+                        FilaConteo(estado, viewModel.contarPorEstado(solicitudes, estado), colorEstado(estado))
                     }
                 }
 
                 // ---------- Por prioridad ----------
                 Seccion("Por prioridad") {
                     viewModel.prioridades.drop(1).forEach { prioridad ->
-                        FilaConteo(prioridad, solicitudes.count { it.prioridad == prioridad }, colorPrioridad(prioridad))
+                        FilaConteo(prioridad, viewModel.contarPorPrioridad(solicitudes, prioridad), colorPrioridad(prioridad))
                     }
                 }
 
                 // ---------- Por responsable ----------
                 Seccion("Por responsable") {
-                    usuariosDemo.filter { it.rol == "Técnico" }.forEach { tecnico ->
+                    viewModel.tecnicos.forEach { tecnico ->
                         FilaConteo(
                             tecnico.nombre,
-                            solicitudes.count { it.responsable == tecnico.correo },
+                            viewModel.contarPorResponsable(solicitudes, tecnico.correo),
                             MaterialTheme.colorScheme.primary
                         )
                     }
                     FilaConteo(
                         "Sin asignar",
-                        solicitudes.count { it.responsable == null },
+                        viewModel.contarPorResponsable(solicitudes, null),
                         MaterialTheme.colorScheme.outline
                     )
                 }

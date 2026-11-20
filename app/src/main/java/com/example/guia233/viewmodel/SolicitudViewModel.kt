@@ -1,6 +1,8 @@
 package com.example.guia233.viewmodel
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.guia233.model.DetalleUiState
@@ -13,6 +15,8 @@ import com.example.guia233.model.data.local.AppDatabase
 import com.example.guia233.model.data.local.HistorialEntity
 import com.example.guia233.model.data.local.SolicitudEntity
 import com.example.guia233.model.data.repository.SolicitudRepository
+import com.example.guia233.utils.cargarImagen
+import com.example.guia233.utils.copiarImagen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -56,8 +60,17 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
     }
 
-    // Solicitud elegida en la lista para ver su detalle
+    // Solicitud elegida en la lista para ver su detalle (solo la cambia el ViewModel)
     var seleccionadaId: Long = 0
+        private set
+
+    // Busca en la lista la solicitud que se abrió (null mientras carga)
+    fun buscarSeleccionada(lista: List<SolicitudEntity>): SolicitudEntity? {
+        return lista.find { it.id == seleccionadaId }
+    }
+
+    // Técnicos que se pueden asignar (salen de las cuentas de prueba)
+    val tecnicos = usuariosDemo.filter { it.rol == "Técnico" }
 
     // Guarda qué solicitud se abrió y limpia los campos del detalle
     fun verDetalle(id: Long) {
@@ -153,7 +166,17 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
 
     // Guarda la imagen elegida desde el dispositivo
     fun onEvidenciaChange(uri: String?) {
-        _estado.update { it.copy(evidenciaUri = uri) }
+        // Se guarda una copia de la imagen dentro de la app y se usa su ruta
+        val ruta = if (uri != null) copiarImagen(getApplication<Application>(), Uri.parse(uri)) else null
+        _estado.update { it.copy(evidenciaUri = ruta) }
+    }
+
+    // Imagen de una evidencia para mostrarla en pantalla (null si no hay)
+    fun imagenEvidencia(ruta: String?): Bitmap? {
+        if (ruta == null) {
+            return null
+        }
+        return cargarImagen(ruta)
     }
 
     // Validación global del formulario
@@ -256,6 +279,16 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
     // Actualiza la nueva categoría
     fun onCategoriaDetalleChange(valor: String) {
         _detalle.update { it.copy(categoria = valor) }
+    }
+
+    // El técnico adjunta una imagen como evidencia del trabajo
+    fun adjuntarEvidencia(s: SolicitudEntity, uri: String) {
+        // Se guarda una copia de la imagen dentro de la app y se usa su ruta
+        val ruta = copiarImagen(getApplication<Application>(), Uri.parse(uri))
+        viewModelScope.launch {
+            repository.actualizar(s.copy(evidenciaTecnicoUri = ruta, ultimaActualizacion = ahora()))
+            registrarHistorial(s.id, s.estado, s.estado, "Evidencia adjuntada por el técnico")
+        }
     }
 
     // Revisa que se haya escrito un comentario cuando la acción lo necesita
@@ -408,12 +441,44 @@ class SolicitudViewModel(app: Application) : AndroidViewModel(app) {
         return s.estado != "Cerrada" && s.estado != "Cancelada"
     }
 
+    // El cliente debe responder porque le pidieron información
+    fun pideInformacion(s: SolicitudEntity): Boolean {
+        return s.estado == "Pendiente de información"
+    }
+
+    // La solicitud espera que el cliente confirme o pida reabrir
+    fun esperaConfirmacion(s: SolicitudEntity): Boolean {
+        return s.estado == "Resuelta"
+    }
+
     // El cliente no ve los comentarios internos del historial
     fun historialVisible(lista: List<HistorialEntity>): List<HistorialEntity> {
         if (usuario?.rol == "Cliente") {
             return lista.filter { it.accion != "Comentario interno" }
         }
         return lista
+    }
+
+    // ---------- Resumen general ----------
+
+    // Cantidad de solicitudes atrasadas
+    fun contarAtrasadas(lista: List<SolicitudEntity>): Int {
+        return lista.count { esAtrasada(it) }
+    }
+
+    // Cantidad de solicitudes con un estado
+    fun contarPorEstado(lista: List<SolicitudEntity>, estado: String): Int {
+        return lista.count { it.estado == estado }
+    }
+
+    // Cantidad de solicitudes con una prioridad
+    fun contarPorPrioridad(lista: List<SolicitudEntity>, prioridad: String): Int {
+        return lista.count { it.prioridad == prioridad }
+    }
+
+    // Cantidad de solicitudes de un técnico (null = sin asignar)
+    fun contarPorResponsable(lista: List<SolicitudEntity>, correo: String?): Int {
+        return lista.count { it.responsable == correo }
     }
 
     // Aplica la búsqueda y todos los filtros a la lista
